@@ -1,6 +1,6 @@
 ---
 name: pi-rtk-worker
-description: Implements pi-rtk extension features — filters, infrastructure, analytics, TUI
+description: Implements pi-rtk extension features - filters, infrastructure, analytics, TUI
 ---
 
 # pi-rtk Worker
