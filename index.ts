@@ -8,7 +8,7 @@
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { resolveConfig } from "./src/config.js";
-import { openDb, closeDb, checkpointDb } from "./src/db/connection.js";
+import { openDb, closeDb, checkpointDb, getDb } from "./src/db/connection.js";
 import { runMigrations } from "./src/db/schema.js";
 import { Tracker } from "./src/tracker.js";
 import { getFilters } from "./src/filters/index.js";
@@ -18,6 +18,8 @@ import {
   updateStatusFooter,
   type PipelineState,
 } from "./src/pipeline.js";
+import { formatGainOutput } from "./src/gain.js";
+import type { SavingsPeriod } from "./src/tracker.js";
 
 export default function (pi: ExtensionAPI) {
   let config = resolveConfig();
@@ -122,5 +124,39 @@ export default function (pi: ExtensionAPI) {
       // Non-fatal
     }
     resetState();
+  });
+
+  // ── Register /rtk command with subcommand routing ───────────────
+
+  pi.registerCommand("rtk", {
+    description: "RTK Token Killer: gain, discover, settings",
+    handler: async (args: string | undefined, ctx: any) => {
+      const parts = (args ?? "").trim().split(/\s+/);
+      const sub = parts[0] || "gain";
+
+      if (sub === "gain") {
+        const db = getDb();
+        if (!db) {
+          ctx.ui.notify("RTK: Database not initialized. Start a session first.", "warning");
+          return;
+        }
+
+        // Parse optional period argument: /rtk gain 7d
+        const validPeriods = new Set<SavingsPeriod>(["24h", "7d", "30d", "all"]);
+        const periodArg = parts[1] as SavingsPeriod | undefined;
+        const period: SavingsPeriod = periodArg && validPeriods.has(periodArg) ? periodArg : "all";
+
+        const output = formatGainOutput(db, {
+          period,
+          sessionSavings: state.sessionSavings,
+        });
+
+        ctx.ui.notify(output, "info");
+        return;
+      }
+
+      // Future subcommands: discover, settings
+      ctx.ui.notify(`RTK: Unknown subcommand "${sub}". Available: gain, discover, settings`, "warning");
+    },
   });
 }
