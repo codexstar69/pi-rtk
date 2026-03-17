@@ -339,7 +339,6 @@ describe("tree filter", () => {
     expect(result.filtered).not.toContain("dist");
     expect(result.filtered).toContain("src/");
   });
-});
 
   it("treats Makefile, Dockerfile, and .gitignore as files, not directories", () => {
     const raw = `.

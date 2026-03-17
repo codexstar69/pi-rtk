@@ -582,6 +582,32 @@ describe("lint-rs", () => {
     expect(result.filtered).toContain("no warnings");
   });
 
+  it("finds lint name with long code snippet (>15 lines before note)", () => {
+    // Simulate a warning where the note line is 20+ lines after the header
+    const block: string[] = [
+      "warning: this function has too many arguments",
+      "  --> src/api.rs:50:1",
+      "   |",
+    ];
+    // Add 20 lines of code context
+    for (let i = 0; i < 20; i++) {
+      block.push(`${50 + i} |     arg${i}: Type${i},`);
+    }
+    block.push(
+      "   |",
+      "   = note: `#[warn(clippy::too_many_arguments)]` on by default",
+      "",
+      `warning: \`myproject\` (bin "myproject") generated 1 warning`,
+    );
+    const raw = block.join("\n");
+
+    const result = filter.apply("cargo clippy", raw);
+
+    // Should find the lint name despite the large gap
+    expect(result.filtered).toContain("clippy::too_many_arguments");
+    expect(result.filtered).not.toContain("unknown");
+  });
+
   it("achieves >70% savings on large output", () => {
     const blocks: string[] = [];
     for (let i = 1; i <= 30; i++) {
