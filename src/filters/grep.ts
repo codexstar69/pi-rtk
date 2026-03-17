@@ -77,6 +77,10 @@ function parseMatches(raw: string): GrepMatch[] {
       continue;
     }
 
+    // Skip rg context lines (file-linenum-text format, hyphen separator)
+    const contextLine = trimmed.match(/^(.+?)-(\d+)-(.*)$/);
+    if (contextLine) continue;
+
     // Try file:text (grep -r without line numbers)
     // Guard: the "file" part must look like a path (contains / or .)
     // to avoid false positives like "Error: something" or "Warning: text"
@@ -196,7 +200,7 @@ export function createGrepFilter(): Filter {
         }
 
         // Overflow indicator for this file
-        const overflow = matches.length - MAX_MATCHES_PER_FILE;
+        const overflow = matches.length - shown;
         if (overflow > 0) {
           parts.push(`  ... ${overflow} more matches`);
         }

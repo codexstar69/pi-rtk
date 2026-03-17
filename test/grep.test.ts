@@ -334,6 +334,64 @@ describe("grep filter — combined", () => {
   });
 });
 
+// ── rg context lines ─────────────────────────────────────────────
+
+describe("grep filter — rg context lines", () => {
+  it("skips rg context lines from -C flag", () => {
+    const raw = [
+      "src/config.ts:10:const port = 3000;",
+      "src/config.ts-11-const host = \"localhost\";",
+      "src/config.ts-12-const db: string = \"mydb\";",
+      "src/config.ts:13:const url = `${host}:${port}`;",
+    ].join("\n");
+
+    const { filtered } = filter.apply("rg -C2 port", raw);
+
+    // Only lines 10 and 13 are actual matches; 11 and 12 are context
+    const matchLines = filtered.split("\n").filter((l) => /^\s+\d+:/.test(l));
+    expect(matchLines.length).toBe(2);
+    expect(filtered).toContain("10:");
+    expect(filtered).toContain("13:");
+    expect(filtered).not.toContain("11:");
+    expect(filtered).not.toContain("12:");
+    expect(filtered).toContain("2 matches in 1 file");
+  });
+});
+
+// ── overflow count with dedup ────────────────────────────────────
+
+describe("grep filter — overflow with dedup", () => {
+  it("overflow count accounts for dedup-skipped matches", () => {
+    // Build a file with 7 matches, 2 of which are duplicate text already
+    // shown in earlier files so they'll be skipped by dedup.
+    // MAX_MATCHES_PER_FILE=5, but with 2 dedup skips, shown=5 from first 7 entries.
+    // We need overflow = 7 - shown.
+
+    // First, create 3 files with the same duplicate text so it hits dedup (>=3 files)
+    const dupText = "  import { shared } from \"shared\";";
+    const entries: Array<{ file: string; line: number; text: string }> = [
+      { file: "src/x.ts", line: 1, text: dupText },
+      { file: "src/y.ts", line: 1, text: dupText },
+      { file: "src/z.ts", line: 1, text: dupText },
+    ];
+
+    // Now the target file with 7 matches, 2 of which have the dup text
+    for (let l = 0; l < 5; l++) {
+      entries.push({ file: "src/target.ts", line: l + 1, text: `  unique line ${l}` });
+    }
+    entries.push({ file: "src/target.ts", line: 6, text: dupText });
+    entries.push({ file: "src/target.ts", line: 7, text: dupText });
+
+    const raw = rgOutput(entries);
+    const { filtered } = filter.apply("rg pattern", raw);
+
+    // In target.ts: 7 matches total. The 2 dup-text matches are skipped (already shown).
+    // So shown=5 (lines 1-5), overflow = 7 - 5 = 2.
+    expect(filtered).toContain("src/target.ts:");
+    expect(filtered).toContain("... 2 more matches");
+  });
+});
+
 // ── noLineNum false positive guard ───────────────────────────────
 
 describe("grep filter — noLineNum false positives", () => {
