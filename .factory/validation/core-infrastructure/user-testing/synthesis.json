@@ -1,0 +1,58 @@
+{
+  "milestone": "core-infrastructure",
+  "round": 1,
+  "status": "pass",
+  "assertionsSummary": {
+    "total": 35,
+    "passed": 35,
+    "failed": 0,
+    "blocked": 0
+  },
+  "passedAssertions": [
+    "VAL-CORE-001",
+    "VAL-CORE-002",
+    "VAL-CORE-003",
+    "VAL-CORE-004",
+    "VAL-CORE-005",
+    "VAL-CORE-006",
+    "VAL-CORE-007",
+    "VAL-CORE-008",
+    "VAL-CORE-009",
+    "VAL-CORE-010",
+    "VAL-CORE-011",
+    "VAL-CORE-012",
+    "VAL-CORE-013",
+    "VAL-CORE-014",
+    "VAL-CORE-015",
+    "VAL-CORE-016",
+    "VAL-CORE-017",
+    "VAL-CORE-018",
+    "VAL-CORE-019",
+    "VAL-CORE-020",
+    "VAL-CORE-021",
+    "VAL-CORE-022",
+    "VAL-CORE-023",
+    "VAL-CORE-024",
+    "VAL-CORE-025",
+    "VAL-CORE-026",
+    "VAL-CORE-027",
+    "VAL-CORE-028",
+    "VAL-CROSS-001",
+    "VAL-CROSS-002",
+    "VAL-CROSS-006",
+    "VAL-CROSS-007",
+    "VAL-CROSS-008",
+    "VAL-CROSS-009",
+    "VAL-CROSS-010"
+  ],
+  "failedAssertions": [],
+  "blockedAssertions": [],
+  "appliedUpdates": [
+    {
+      "target": "user-testing.md",
+      "description": "Added Flow Validator Guidance: vitest section with isolation rules and boundaries for test surface",
+      "source": "setup"
+    }
+  ],
+  "previousRound": null
+}

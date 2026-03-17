@@ -1,0 +1,162 @@
+{
+  "groupId": "matcher-group",
+  "testedAt": "2026-03-17T10:34:17.000Z",
+  "isolation": {
+    "workingDirectory": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testFile": "test/matcher.test.ts",
+    "testCommand": "bun run test -- matcher"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": {
+    "VAL-CORE-004": {
+      "status": "pass",
+      "evidence": "All git subcommand tests pass: git status (+ flags), git diff (+ --cached, --staged, path), git log (+ --oneline -20), git push (+ origin main), git pull, git fetch (+ --all), git add (+ files), git commit, git branch (+ -a), git stash (+ pop, list, apply). 22 tests in 'git subcommands' describe block all green.",
+      "testNames": [
+        "matches git status",
+        "matches git status with flags",
+        "matches git diff",
+        "matches git diff --cached",
+        "matches git diff --staged",
+        "matches git diff with path",
+        "matches git log",
+        "matches git log with flags",
+        "matches git push",
+        "matches git push with remote and branch",
+        "matches git pull",
+        "matches git fetch",
+        "matches git fetch --all",
+        "matches git add",
+        "matches git add with files",
+        "matches git commit",
+        "matches git branch",
+        "matches git branch -a",
+        "matches git stash",
+        "matches git stash pop",
+        "matches git stash list"
+      ]
+    },
+    "VAL-CORE-005": {
+      "status": "pass",
+      "evidence": "All ls/find/fd/tree/exa/eza tests pass: ls, ls -la, ls src/, exa --long, eza --tree, find, fd .ts, fd with flags, tree, tree -L 3. 10 tests in 'ls/find/fd/tree/exa/eza variants' describe block all green.",
+      "testNames": [
+        "matches ls",
+        "matches ls -la",
+        "matches ls with path",
+        "matches exa",
+        "matches eza",
+        "matches find",
+        "matches fd",
+        "matches fd with flags",
+        "matches tree",
+        "matches tree with depth"
+      ]
+    },
+    "VAL-CORE-006": {
+      "status": "pass",
+      "evidence": "All test runner tests pass: bun test, bun run test, vitest, vitest run, jest, jest with pattern, npm test, npm run test, pnpm test, pnpm run test, pytest, pytest with flags, python -m pytest, python3 -m pytest, cargo test, cargo test with filter, go test, go test with flags. 18 tests in 'test runner variants' describe block all green.",
+      "testNames": [
+        "matches bun test",
+        "matches bun run test",
+        "matches vitest",
+        "matches vitest run",
+        "matches jest",
+        "matches jest with pattern",
+        "matches npm test",
+        "matches npm run test",
+        "matches pnpm test",
+        "matches pnpm run test",
+        "matches pytest",
+        "matches pytest with flags",
+        "matches python -m pytest",
+        "matches python3 -m pytest",
+        "matches cargo test",
+        "matches cargo test with filter",
+        "matches go test",
+        "matches go test with flags"
+      ]
+    },
+    "VAL-CORE-007": {
+      "status": "pass",
+      "evidence": "All linter tests pass: tsc, tsc --noEmit, bunx tsc --noEmit, npx tsc, eslint, biome, ruff check, ruff without subcommand, cargo clippy, cargo clippy with flags, cargo build, cargo build --release. 12 tests in 'linter variants' describe block all green.",
+      "testNames": [
+        "matches tsc",
+        "matches tsc --noEmit",
+        "matches bunx tsc --noEmit",
+        "matches npx tsc",
+        "matches eslint",
+        "matches biome",
+        "matches ruff",
+        "matches ruff without subcommand",
+        "matches cargo clippy",
+        "matches cargo clippy with flags",
+        "matches cargo build",
+        "matches cargo build --release"
+      ]
+    },
+    "VAL-CORE-008": {
+      "status": "pass",
+      "evidence": "All grep/rg tests pass: rg with pattern, rg -i pattern, grep -r, grep without flags. 4 tests in 'grep/rg variants' describe block all green.",
+      "testNames": [
+        "matches rg with pattern",
+        "matches rg -i pattern",
+        "matches grep -r",
+        "matches grep without flags"
+      ]
+    },
+    "VAL-CORE-009": {
+      "status": "pass",
+      "evidence": "All docker/kubectl tests pass: docker ps, docker ps -a, docker images, docker compose up -d, docker compose ps, docker logs, docker logs -f, kubectl get pods, kubectl with namespace, kubectl describe. 10 tests in 'docker/kubectl variants' describe block all green.",
+      "testNames": [
+        "matches docker ps",
+        "matches docker ps -a",
+        "matches docker images",
+        "matches docker compose",
+        "matches docker compose ps",
+        "matches docker logs",
+        "matches docker logs -f",
+        "matches kubectl get pods",
+        "matches kubectl with namespace",
+        "matches kubectl describe"
+      ]
+    },
+    "VAL-CORE-010": {
+      "status": "pass",
+      "evidence": "All package install tests pass: bun install, bun add, npm install, npm install with package, npm i, pnpm install, pnpm add, yarn install, yarn add, pip install, pip install -r, pip3 install. 12 tests in 'package install variants' describe block all green.",
+      "testNames": [
+        "matches bun install",
+        "matches bun add",
+        "matches npm install",
+        "matches npm install with package",
+        "matches npm i (shorthand)",
+        "matches pnpm install",
+        "matches pnpm add",
+        "matches yarn install",
+        "matches yarn add",
+        "matches pip install",
+        "matches pip install -r",
+        "matches pip3 install"
+      ]
+    },
+    "VAL-CORE-011": {
+      "status": "pass",
+      "evidence": "All null-return tests pass: echo hello, pwd, whoami, mkdir, cp, chmod, mv, rm, cat, cd, empty string, whitespace only all return null. 12 tests in 'returns null for unmatched commands' describe block all green.",
+      "testNames": [
+        "returns null for echo",
+        "returns null for pwd",
+        "returns null for whoami",
+        "returns null for mkdir",
+        "returns null for cp",
+        "returns null for chmod",
+        "returns null for mv",
+        "returns null for rm",
+        "returns null for cat",
+        "returns null for cd",
+        "returns null for empty string",
+        "returns null for whitespace only"
+      ]
+    }
+  },
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 8 assertions (VAL-CORE-004 through VAL-CORE-011): all 8 passed. 113 tests in matcher.test.ts all green. Test suite completed in 272ms."
+}

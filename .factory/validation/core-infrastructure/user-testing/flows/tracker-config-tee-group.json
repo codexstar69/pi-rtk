@@ -1,0 +1,106 @@
+{
+  "groupId": "tracker-config-tee-group",
+  "testedAt": "2026-03-17T10:34:12Z",
+  "isolation": {
+    "workingDirectory": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testFiles": ["test/tracker.test.ts", "test/config.test.ts", "test/tee.test.ts"],
+    "testCommand": "bun run test -- tracker config tee"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": {
+    "VAL-CORE-012": {
+      "status": "pass",
+      "evidence": "tracker.test.ts > schema creation: 5 tests all pass — creates command_runs table with all required columns, creates idx_runs_timestamp index, creates idx_runs_command index, schema creation is idempotent (twice), schema creation is idempotent (three times)",
+      "testNames": [
+        "schema creation > creates command_runs table with all required columns",
+        "schema creation > creates idx_runs_timestamp index",
+        "schema creation > creates idx_runs_command index",
+        "schema creation > schema creation is idempotent — running twice does not error",
+        "schema creation > schema creation is idempotent — running three times does not error"
+      ]
+    },
+    "VAL-CORE-013": {
+      "status": "pass",
+      "evidence": "tracker.test.ts > tracker.record(): 8 tests all pass — inserts a row with correct values, computes savings_pct correctly, computes raw_tokens and filt_tokens from char counts, handles zero raw chars without error, stores null for optional fields, inserts multiple rows, auto-increments id, sets timestamp to current time",
+      "testNames": [
+        "tracker.record() > inserts a row with correct values",
+        "tracker.record() > computes savings_pct correctly",
+        "tracker.record() > computes raw_tokens and filt_tokens from char counts",
+        "tracker.record() > handles zero raw chars without error (no division by zero)",
+        "tracker.record() > stores null for optional fields when not provided",
+        "tracker.record() > inserts multiple rows",
+        "tracker.record() > auto-increments id",
+        "tracker.record() > sets timestamp to current time"
+      ]
+    },
+    "VAL-CORE-014": {
+      "status": "pass",
+      "evidence": "tracker.test.ts > tracker.getSavings(): 6 tests all pass — returns correct aggregates for 'all' period, empty period returns zeros without error, filters by 24h period, filters by 7d period, filters by 30d period, computes correct avgSavingsPct",
+      "testNames": [
+        "tracker.getSavings() > returns correct aggregates for 'all' period",
+        "tracker.getSavings() > empty period returns zeros without error",
+        "tracker.getSavings() > filters by 24h period",
+        "tracker.getSavings() > filters by 7d period",
+        "tracker.getSavings() > filters by 30d period",
+        "tracker.getSavings() > computes correct avgSavingsPct"
+      ]
+    },
+    "VAL-CORE-015": {
+      "status": "pass",
+      "evidence": "config.test.ts > resolveConfig: 7 tests all pass — returns defaults when nothing is set, settings.json overrides defaults, env var overrides settings.json, env var overrides defaults when no settings file, handles invalid env var values gracefully, partial settings.json is merged with defaults, tee env vars override tee settings",
+      "testNames": [
+        "resolveConfig > returns defaults when nothing is set",
+        "resolveConfig > settings.json overrides defaults",
+        "resolveConfig > env var overrides settings.json",
+        "resolveConfig > env var overrides defaults when no settings file",
+        "resolveConfig > handles invalid env var values gracefully",
+        "resolveConfig > partial settings.json is merged with defaults",
+        "resolveConfig > tee env vars override tee settings"
+      ]
+    },
+    "VAL-CORE-016": {
+      "status": "pass",
+      "evidence": "config.test.ts > findFilter: 'skips disabled filter groups' and 'skips disabled group but allows other groups' both pass, confirming disabled filter group causes null return for git commands",
+      "testNames": [
+        "findFilter > skips disabled filter groups",
+        "findFilter > skips disabled group but allows other groups"
+      ]
+    },
+    "VAL-CORE-017": {
+      "status": "pass",
+      "evidence": "tee.test.ts > tee recovery system > file creation: 3 tests pass (creates a file in the tee directory, creates the tee directory if it does not exist, returns an absolute path to the saved file); content matching: 3 tests pass (file content matches raw output exactly, preserves unicode, handles empty output); filename format: 4 tests pass (uses timestamp-based filename, includes sanitized command name, sanitizes special characters, has .txt extension)",
+      "testNames": [
+        "tee recovery system > file creation > creates a file in the tee directory",
+        "tee recovery system > file creation > creates the tee directory if it does not exist",
+        "tee recovery system > file creation > returns an absolute path to the saved file",
+        "tee recovery system > content matching > file content matches raw output exactly",
+        "tee recovery system > filename format > uses timestamp-based filename",
+        "tee recovery system > filename format > includes sanitized command name in filename"
+      ]
+    },
+    "VAL-CORE-018": {
+      "status": "pass",
+      "evidence": "tee.test.ts > rotation at maxFiles: 3 tests pass (deletes oldest file when count exceeds maxFiles, handles maxFiles of 1 — only keeps latest file, does not delete files when under maxFiles limit); truncation at maxFileSize: 3 tests pass (truncates output when exceeding maxFileSize, does not truncate output within maxFileSize, truncation preserves the start of the output)",
+      "testNames": [
+        "tee recovery system > rotation at maxFiles > deletes oldest file when count exceeds maxFiles",
+        "tee recovery system > rotation at maxFiles > handles maxFiles of 1 — only keeps latest file",
+        "tee recovery system > rotation at maxFiles > does not delete files when under maxFiles limit",
+        "tee recovery system > truncation at maxFileSize > truncates output when exceeding maxFileSize",
+        "tee recovery system > truncation at maxFileSize > does not truncate output within maxFileSize",
+        "tee recovery system > truncation at maxFileSize > truncation preserves the start of the output"
+      ]
+    },
+    "VAL-CORE-019": {
+      "status": "pass",
+      "evidence": "tee.test.ts > hint format: 3 tests pass (returns hint in correct format, hint contains the exact file path, hint uses square bracket format) — confirms filtered output contains [full output: <path>] tee hint",
+      "testNames": [
+        "tee recovery system > hint format > returns hint in correct format",
+        "tee recovery system > hint format > hint contains the exact file path",
+        "tee recovery system > hint format > hint uses square bracket format"
+      ]
+    }
+  },
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 8 assertions (VAL-CORE-012 through VAL-CORE-019): all 8 passed. 66 total tests across 3 test files (19 tracker, 28 config, 19 tee) — all green."
+}
