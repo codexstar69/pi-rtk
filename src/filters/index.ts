@@ -20,6 +20,7 @@ import { createLintJsFilter } from "./lint-js.js";
 import { createLintPyFilter } from "./lint-py.js";
 import { createLintRsFilter } from "./lint-rs.js";
 import { createGrepFilter } from "./grep.js";
+import { createJsonSchemaFilter } from "./json-schema.js";
 
 /** Result returned by every filter's apply(). */
 export interface FilterResult {
@@ -61,6 +62,7 @@ const ALL_FILTERS: Filter[] = [
   createLintPyFilter(),
   createLintRsFilter(),
   createGrepFilter(),
+  createJsonSchemaFilter(),
 ];
 
 /** Register a filter (used by filter modules during setup). */
