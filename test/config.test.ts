@@ -2,10 +2,18 @@
  * Tests for config resolution, settings load/save, and filter registry.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+
+// Mock node:os so we can override homedir() to isolate tests from
+// the user's real global ~/.pi/agent/settings.json.
+vi.mock("node:os", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:os")>();
+  return { ...actual, homedir: vi.fn(actual.homedir) };
+});
+
 import {
   resolveConfig,
   DEFAULTS,
@@ -68,12 +76,15 @@ describe("resolveConfig", () => {
 
   beforeEach(() => {
     tmpDir = makeTmpDir();
+    // Isolate from user's real global settings by pointing os.homedir() to tmpDir
+    vi.mocked(os.homedir).mockReturnValue(tmpDir);
     // Clean env
     for (const k of ENV_KEYS) delete process.env[k];
   });
 
   afterEach(() => {
     for (const k of ENV_KEYS) delete process.env[k];
+    vi.mocked(os.homedir).mockRestore();
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
@@ -226,9 +237,12 @@ describe("loadSettings", () => {
 
   beforeEach(() => {
     tmpDir = makeTmpDir();
+    // Isolate from user's real global settings by pointing os.homedir() to tmpDir
+    vi.mocked(os.homedir).mockReturnValue(tmpDir);
   });
 
   afterEach(() => {
+    vi.mocked(os.homedir).mockRestore();
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
@@ -284,9 +298,12 @@ describe("saveSettings", () => {
 
   beforeEach(() => {
     tmpDir = makeTmpDir();
+    // Isolate from user's real global settings by pointing os.homedir() to tmpDir
+    vi.mocked(os.homedir).mockReturnValue(tmpDir);
   });
 
   afterEach(() => {
+    vi.mocked(os.homedir).mockRestore();
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
