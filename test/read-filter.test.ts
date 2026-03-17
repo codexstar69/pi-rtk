@@ -783,3 +783,55 @@ describe("read-filter YAML block scalars", () => {
     expect(filtered).toContain("folded # text");
   });
 });
+
+// ── Cross-line string state (Bug 2+8) ───────────────────────────
+
+describe("read-filter cross-line template literals", () => {
+  it("preserves // on continuation line of multi-line template literal", () => {
+    const raw = makeLargeFile([
+      "const html = `",
+      "  <div> // this is content </div>",
+      "`;",
+    ]);
+
+    const { filtered } = filter.apply("read:/project/file.ts", raw);
+    expect(filtered).toContain("// this is content");
+  });
+
+  it("handles nested backtick in template literal ${}", () => {
+    const raw = makeLargeFile([
+      "const x = `value: ${map.get(`key`)} end`;",
+    ]);
+
+    const { filtered } = filter.apply("read:/project/file.ts", raw);
+    expect(filtered).toContain("const x = `value: ${map.get(`key`)} end`;");
+  });
+});
+
+// ── YAML single-quote escape (Bug 3) ────────────────────────────
+
+describe("read-filter YAML single-quote escape", () => {
+  it("preserves # inside YAML single-quoted string with '' escape", () => {
+    const raw = makeLargeFile([
+      "key: 'it''s a value # not a comment'",
+    ]);
+
+    const { filtered } = filter.apply("read:/project/config.yaml", raw);
+    expect(filtered).toContain("# not a comment");
+  });
+});
+
+// ── TOML triple-quoted strings (Bug 4) ──────────────────────────
+
+describe("read-filter TOML triple-quoted strings", () => {
+  it("preserves # inside TOML triple-quoted string", () => {
+    const raw = makeLargeFile([
+      'desc = """',
+      "This has a # hash inside",
+      '"""',
+    ]);
+
+    const { filtered } = filter.apply("read:/project/config.toml", raw);
+    expect(filtered).toContain("# hash inside");
+  });
+});
