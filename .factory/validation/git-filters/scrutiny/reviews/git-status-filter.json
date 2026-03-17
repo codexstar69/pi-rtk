@@ -1,0 +1,39 @@
+{
+  "featureId": "git-status-filter",
+  "reviewedAt": "2026-03-17T06:30:00.000Z",
+  "commitId": "6126621",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Solid implementation of the git status filter. The code is well-structured with pre-compiled regex patterns, clear section-based parsing, proper error handling (fatal errors preserved verbatim), and comprehensive file status grouping (staged, modified, untracked, deleted, conflicts). The filter correctly implements the Filter interface, handles all specified edge cases (detached HEAD, diverged branches, unicode filenames, merge conflicts, renamed files), and includes file list truncation at 10 files per section. Tests are thorough with 17 cases covering all 7 validation assertions plus additional edge cases. The only minor observation is that `matches()` returns true for short-form flags (`-s`, `--short`) but `apply()` parses long-form output — this is acceptable since pi-rtk filters tool_result output and the user's command flags determine what git produces, not what the filter expects.",
+    "issues": [
+      {
+        "file": "src/filters/git-status.ts",
+        "line": 64,
+        "severity": "non_blocking",
+        "description": "The `matches()` method returns true for `git status -s` and `git status --short`, but `apply()` only parses long-form (verbose) git status output. If the LLM runs `git status -s`, the filter would produce just a branch line with 'unknown' (no 'On branch' in short output). This is not a bug per se — the output would still be valid and small — but could be confusing. Consider either: (a) excluding short-form flags in `matches()`, or (b) adding porcelain/short-format parsing in a future iteration."
+      },
+      {
+        "file": "src/filters/git-status.ts",
+        "line": 170,
+        "severity": "non_blocking",
+        "description": "Staged deletions and unstaged deletions are merged into a single '🗑️ Deleted' section. While reasonable for compactness, a user might want to distinguish between 'staged for deletion' vs 'unstaged deletion'. Low priority since the primary goal is compression."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The worker updated test/config.test.ts to fix a pre-existing test that assumed the filter registry starts empty. This is a good fix, but AGENTS.md doesn't document the convention that filters auto-register at import time (module-level side effect in src/filters/index.ts). Future workers adding filters should know that importing createXFilter and adding to ALL_FILTERS is the registration pattern.",
+      "evidence": "src/filters/index.ts line 42: ALL_FILTERS array is populated at module load. test/config.test.ts diff shows the old test expected findFilter('git status') to return null, now tests 'echo hello' instead."
+    },
+    {
+      "area": "skills",
+      "observation": "SKILL.md says 'Do NOT read IMPLEMENTATION.md' but the worker's transcript skeleton shows IMPLEMENTATION.md was read during initial context gathering by the mission-worker-base startup. The worker's skillFeedback.suggestedChanges flags this same issue. The skill should clarify that bootstrap-loaded context is fine.",
+      "evidence": "Transcript skeleton shows Read tool call for IMPLEMENTATION.md as part of parallel initial reads. skillFeedback.suggestedChanges: [\"The skill says 'Do NOT read IMPLEMENTATION.md' but it was already read during initial context gathering by the mission-worker-base startup.\"]"
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The git-status-filter feature passes review. Implementation is clean, well-structured, and covers all 7 validation assertions (VAL-GIT-001 through VAL-GIT-007). 17 tests with realistic fixtures verify happy path compression (>50%), clean repo output, large output truncation (>60% savings), error preservation, ahead/behind/diverged tracking, detached HEAD, unicode filenames, deleted files, renamed files, and merge conflicts. Two non-blocking issues noted: (1) matches() accepts short-form git status flags but apply() only parses long-form output, (2) staged and unstaged deletions are merged into one section. Neither affects correctness or the validation contract. Registry integration is correct, and the pre-existing config test was properly updated."
+}

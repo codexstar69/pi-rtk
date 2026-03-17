@@ -33,6 +33,13 @@ Architectural decisions, patterns, and conventions discovered during implementat
 - Atomic writes via temp file + rename
 - Global vs project scope (project overrides global)
 
+## Filter Test Fixture Design
+- Compression savings thresholds (>50%, >60%, >80%) require realistic fixture proportions
+- For git-diff: use 5+ files × 2+ hunks × (3 context lines + 1 change line) to achieve >50% savings — the context stripping drives compression
+- For git-action: use verbose multi-line output (20+ lines) to achieve >80% savings from single-line summaries
+- Small/minimal fixtures often fail savings assertions because the filter output isn't proportionally smaller
+- Worker iteration on fixture design is normal TDD workflow, not a skill gap
+
 ## TUI Pattern (from pi-voice)
 - Component: `render(width) → string[]`, `handleInput(data)`, `invalidate()`
 - Opened via `ctx.ui.custom()` with overlay options

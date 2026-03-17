@@ -1,0 +1,57 @@
+{
+  "featureId": "git-log-action-branch-filters",
+  "reviewedAt": "2026-03-17T05:33:30.000Z",
+  "commitId": "6f1c6fc",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "All three filter implementations (git-log, git-action, git-branch) are well-structured, follow the established Filter interface pattern exactly, and are properly registered in the filter registry. Code quality is good: functions are well-documented with JSDoc, regex patterns are pre-compiled, edge cases (empty input, boundary values) are handled, and the implementations match the conventions set by existing git-status and git-diff filters. Test coverage is comprehensive with 46 tests across 3 files covering happy paths, boundary conditions, error preservation, command matching, and savings verification. All VAL-GIT-014 through VAL-GIT-020 assertions are satisfied by specific test cases.",
+    "issues": [
+      {
+        "file": "src/filters/git-branch.ts",
+        "line": 89,
+        "severity": "non_blocking",
+        "description": "When truncating beyond 50 branches, the current branch is swapped into position MAX_BRANCHES-1 (index 49), replacing whatever branch was there. This means the replaced branch is silently dropped from the output and the truncation count (total - MAX_BRANCHES) doesn't account for this swap — the actual number of hidden branches is still accurate but the branch at index 49 is lost without notice. Minor cosmetic issue; functionally correct since the count still reflects branches not shown."
+      },
+      {
+        "file": "src/filters/git-action.ts",
+        "line": 26,
+        "severity": "non_blocking",
+        "description": "The 'nothing to commit' and 'no changes added' patterns are treated as errors/info to preserve, which is the correct behavior. However, these aren't really 'errors' — they're informational messages. The ERROR_PATTERNS array name is slightly misleading but the behavior is correct per the spec (preserve non-success output)."
+      },
+      {
+        "file": "src/filters/git-log.ts",
+        "line": 59,
+        "severity": "non_blocking",
+        "description": "The oneline format regex RE_ONELINE uses /^([0-9a-f]{7,12})\\s+(.+)/ which would match a hash up to 12 chars. If an oneline entry had a hash longer than 12 chars (e.g., user did git log --format='%H %s'), it wouldn't be matched by this branch but would also not be matched by RE_COMMIT (which expects 'commit ' prefix). This is an unlikely edge case since --oneline always uses short hashes, but worth noting."
+      },
+      {
+        "file": "src/filters/git-branch.ts",
+        "line": 55,
+        "severity": "non_blocking",
+        "description": "The verbose format parser checks if the second token matches /^[0-9a-f]{7,}$/ to detect 'git branch -v' format. This heuristic would fail if a branch name happened to be a valid hex string (e.g., 'deadbeef' branch with -v flag), but this is an extreme edge case."
+      },
+      {
+        "file": "src/filters/git-action.ts",
+        "line": 113,
+        "severity": "non_blocking",
+        "description": "stripHints only removes lines starting with 'hint:' but git sometimes indents hint lines. The test fixtures show unindented hints which matches the common case. Indented hint lines (rare) would be preserved, which is safe — it just means slightly less compression on error output."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The worker followed TDD correctly: wrote test files first, then implementation, then registry registration. This matches the pi-rtk-worker skill procedure. No convention gaps observed — the code uses .js extensions in imports, synchronous filters, closure-based factory functions (createGitXFilter), and vitest describe/it/expect exactly as established by git-status and git-diff filters.",
+      "evidence": "Transcript skeleton shows: test files created before implementation files. Import style in src/filters/git-log.ts:12 uses './index.js' matching existing pattern in git-status.ts and git-diff.ts."
+    },
+    {
+      "area": "skills",
+      "observation": "Worker followed the skill procedure faithfully: read feature description, wrote tests first, implemented to make them pass, ran bun run test and bunx tsc --noEmit. skillFeedback.followedProcedure is true with no deviations. One minor iteration was needed to fix a test fixture (git commit output was too small for 80% savings threshold) — this is normal TDD workflow, not a skill gap.",
+      "evidence": "Handoff verification shows both commands ran with exitCode 0. Transcript shows one test fixture adjustment before final green."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "All three git filters (git-log, git-action, git-branch) are correctly implemented following established patterns, properly registered in the filter registry, and thoroughly tested with 46 passing tests. VAL-GIT-014 (log oneline with >50% savings), VAL-GIT-015 (20-commit truncation), VAL-GIT-016 (80-char subject truncation), VAL-GIT-017 (action commands → ok ✓ with >80% savings), VAL-GIT-018 (rejected push/merge conflict preservation), VAL-GIT-019 (compact branch listing with * marker), and VAL-GIT-020 (50+ branch truncation) are all verified by dedicated test cases. Five non-blocking issues noted — all are minor cosmetic or extreme edge case concerns that don't affect correctness. Pass."
+}

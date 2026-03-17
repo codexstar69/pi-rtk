@@ -1,0 +1,51 @@
+{
+  "featureId": "git-diff-filter",
+  "reviewedAt": "2026-03-17T05:45:00.000Z",
+  "commitId": "c345802",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Solid implementation of git-diff filter. Clean parser with well-structured FileDiff/Hunk types, correct stat summary generation, proper context stripping for compression, hunk truncation at 20-line threshold (showing first 10 + indicator), binary diff handling, and file:line hunk headers. Code follows existing filter patterns (git-status.ts) closely. All 6 VAL assertions (VAL-GIT-008 through VAL-GIT-013) are satisfied with 19 tests providing good coverage including boundary cases. The filter is correctly registered in the filter registry.",
+    "issues": [
+      {
+        "file": "src/filters/git-diff.ts",
+        "line": 156,
+        "severity": "non_blocking",
+        "description": "buildSummary omits insertions/deletions from the summary when they are zero. For a deletion-only diff, the summary would read '1 file changed, 3 deletions(-)' without mentioning insertions, which is fine and mirrors git's own --stat behavior. However, a diff with zero changes in both (e.g., a binary-only diff) would produce '2 files changed' with no further detail — this is acceptable but could be confusing. Minor cosmetic concern."
+      },
+      {
+        "file": "src/filters/git-diff.ts",
+        "line": 117,
+        "severity": "non_blocking",
+        "description": "The hunk line counter includes context lines (starting with space) and no-newline markers (starting with backslash) in the hunk.lines array, but stripContext filters them out before truncation. This means the truncation threshold is applied to change lines only (after stripping), not raw hunk lines. This is actually correct behavior — the spec says 'truncate hunks >20 lines' and stripping context before counting ensures consistent truncation regardless of context amount. Just noting the subtlety."
+      },
+      {
+        "file": "src/filters/git-diff.ts",
+        "line": 24,
+        "severity": "non_blocking",
+        "description": "RE_DIFF_HEADER uses non-greedy match for the 'a/' path (`(.+?)`) but greedy for 'b/' path (`(.+)`). This correctly handles filenames with spaces in the 'a/' portion but could theoretically mismatch if the filename contains ' b/' literally. This is an extremely rare edge case that git itself handles inconsistently, so not a real concern."
+      },
+      {
+        "file": "test/git-diff.test.ts",
+        "line": 1,
+        "severity": "non_blocking",
+        "description": "No test for `git diff --stat` command output. The filter matches `git diff --stat` (confirmed by the 'matches git diff command' test), but if actual `git diff --stat` output (which is already a stat summary, not full diff format) were fed to the filter, parseDiff would return an empty array since there are no 'diff --git' headers, and the filter would return raw output as-is. This is actually correct passthrough behavior, but it's worth noting that the filter implicitly handles this case."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "Skill says 'Do NOT read IMPLEMENTATION.md', but the feature description says 'implementing git diff filter per IMPLEMENTATION.md'. The worker transcript shows the worker did NOT read IMPLEMENTATION.md and instead relied on the feature description, which contained sufficient detail. The skill instruction was followed correctly. However, the contradiction between the skill directive and the feature description text could confuse future workers.",
+      "evidence": "SKILL.md line 9: 'Do NOT read IMPLEMENTATION.md'. Feature description: 'Create src/filters/git-diff.ts implementing git diff filter per IMPLEMENTATION.md'. Transcript shows no Read call to IMPLEMENTATION.md."
+    },
+    {
+      "area": "conventions",
+      "observation": "Worker iterated several times on the makeTypicalDiff() test fixture to achieve >50% compression. The issue was that small/proportionally compact fixtures don't achieve 50% savings because the filter keeps all change lines. The final fixture uses 5 files with 2 hunks each having 3 context lines before/after a single change — realistic real-world proportions. This knowledge about fixture design for compression tests could help future filter workers.",
+      "evidence": "Transcript shows 6 iterations on the fixture, adjusting context-to-change ratios. Final fixture in test/git-diff.test.ts lines 27-64 uses 5 files × 2 hunks × (3 context + 1 change) = realistic proportions."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The git-diff filter passes review. Implementation is clean, well-structured, and follows existing patterns. All 6 validation assertions (VAL-GIT-008 through VAL-GIT-013) are satisfied by 19 tests with good boundary coverage (truncation at exactly 20 lines, empty/whitespace inputs, binary-only diffs, renames, no-newline markers). No blocking issues found. Non-blocking observations relate to minor cosmetic concerns with binary-only summaries and regex edge cases. The filter correctly strips context lines for compression, truncates large hunks, replaces binary diffs with indicators, preserves file:line hunk headers, and generates stat summaries."
+}
