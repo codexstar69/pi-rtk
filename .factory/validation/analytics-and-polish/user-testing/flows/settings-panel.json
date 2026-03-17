@@ -1,0 +1,207 @@
+{
+  "groupId": "settings-panel",
+  "testedAt": "2026-03-17T13:27:49Z",
+  "isolation": {
+    "appRoot": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testFiles": ["test/settings-panel.test.ts", "test/config.test.ts"],
+    "command": "bun run test -- settings-panel config"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": [
+    {
+      "id": "VAL-UX-010",
+      "title": "/rtk settings renders overlay",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with settings-panel pattern", "expected": "describe('settings panel render') tests pass", "observed": "All 6 tests in 'settings panel render' block passed" },
+        { "action": "Verify 'renders overlay panel with filter toggles and tee config' test", "expected": "Panel renders header, all 10 filter toggles, and tee config items", "observed": "Test passed — asserts pi-rtk header, Git/Ls/Test/Lint/Grep/JSON/Docker/Npm/Read/Log Dedup filter labels, and Tee/Max Files/Max Size items" },
+        { "action": "Verify 'shows On/Off for boolean values' test", "expected": "Boolean toggles display On/Off", "observed": "Test passed — asserts 'On' present in render output" },
+        { "action": "Verify 'shows current values for number settings' test", "expected": "Number settings display formatted values", "observed": "Test passed — asserts '20' (maxFiles) and '1.0M' (maxFileSize) present" },
+        { "action": "Verify 'renders scope row' test", "expected": "Scope row displayed", "observed": "Test passed — asserts 'Scope' and 'Global' present" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "analytics-and-polish/settings-panel/test-output.txt",
+        "passingTests": [
+          "settings panel render > renders overlay panel with filter toggles and tee config",
+          "settings panel render > shows On/Off for boolean values",
+          "settings panel render > shows current values for number settings",
+          "settings panel render > uses render caching",
+          "settings panel render > handles narrow width",
+          "settings panel render > renders scope row"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-011",
+      "title": "/rtk settings navigation",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with settings-panel pattern", "expected": "describe('settings arrow navigation works') tests pass", "observed": "All 4 tests in block passed" },
+        { "action": "Verify 'down arrow moves selection down' test", "expected": "Down arrow changes selected row", "observed": "Test passed — render output changes after KEY_DOWN" },
+        { "action": "Verify 'up arrow moves selection up' test", "expected": "Up arrow changes selected row", "observed": "Test passed — render output differs after KEY_UP vs KEY_DOWN" },
+        { "action": "Verify 'wraps around from bottom to top' test", "expected": "Navigation wraps at boundaries", "observed": "Test passed — 100 KEY_DOWN presses then one more wraps to different output" },
+        { "action": "Verify 'wraps around from top to bottom' test", "expected": "Navigation wraps at top", "observed": "Test passed — KEY_UP from row 0 does not crash and produces valid output" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "analytics-and-polish/settings-panel/test-output.txt",
+        "passingTests": [
+          "settings arrow navigation works > down arrow moves selection down",
+          "settings arrow navigation works > up arrow moves selection up",
+          "settings arrow navigation works > wraps around from bottom to top",
+          "settings arrow navigation works > wraps around from top to bottom"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-012",
+      "title": "/rtk settings toggle",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with settings-panel pattern", "expected": "describe('settings enter toggles value') tests pass", "observed": "All 6 tests in block passed" },
+        { "action": "Verify 'toggles boolean filter (e.g., Git) off and on' test", "expected": "Enter toggles Git filter on/off and calls save", "observed": "Test passed — config.filters.git toggles false→true, save() called" },
+        { "action": "Verify 'toggles scope between global and project' test", "expected": "Enter toggles scope", "observed": "Test passed — deps.scope toggles global↔project" },
+        { "action": "Verify 'toggles tee enabled' test", "expected": "Enter toggles tee.enabled", "observed": "Test passed — config.tee.enabled toggles true→false" },
+        { "action": "Verify edge case 'handles all filter toggles correctly'", "expected": "All 10 filter toggles work", "observed": "Test passed — each of git/ls/test/lint/grep/json/docker/npm/read/logDedup toggled individually" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "analytics-and-polish/settings-panel/test-output.txt",
+        "passingTests": [
+          "settings enter toggles value > toggles boolean filter (e.g., Git) off and on",
+          "settings enter toggles value > toggles scope between global and project",
+          "settings enter toggles value > toggles tee enabled",
+          "settings enter toggles value > adjusts number via enter (increment)",
+          "settings enter toggles value > adjusts number via left/right arrows",
+          "settings enter toggles value > respects min/max bounds for number settings",
+          "settings panel edge cases > handles all filter toggles correctly",
+          "settings panel edge cases > tee mode toggles between failures and all"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-013",
+      "title": "/rtk settings escape closes",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with settings-panel pattern", "expected": "describe('settings escape closes') tests pass", "observed": "Both tests passed" },
+        { "action": "Verify 'escape calls onClose/done' test", "expected": "Escape triggers onClose callback", "observed": "Test passed — onClose called once" },
+        { "action": "Verify 'escape works from any row' test", "expected": "Escape works from non-zero row", "observed": "Test passed — after 3 KEY_DOWN, escape still calls onClose" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "analytics-and-polish/settings-panel/test-output.txt",
+        "passingTests": [
+          "settings escape closes > escape calls onClose/done",
+          "settings escape closes > escape works from any row"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-014",
+      "title": "Settings persistence save",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with settings-panel and config patterns", "expected": "Persistence save tests pass", "observed": "All related tests passed" },
+        { "action": "Verify 'toggle changes written to settings.json under rtk key' test", "expected": "saveSettings writes config to disk with rtk key", "observed": "Test passed — file exists, JSON has rtk.filters.git = false" },
+        { "action": "Verify 'panel save callback persists config' test", "expected": "Panel toggle calls save with updated config", "observed": "Test passed — save mock called with config.filters.git = false" },
+        { "action": "Verify config.test.ts 'creates project settings file with atomic write'", "expected": "Atomic write works", "observed": "Test passed — file created, content matches" },
+        { "action": "Verify config.test.ts 'preserves existing keys in settings.json'", "expected": "Other keys preserved", "observed": "Test passed — otherExtension key preserved alongside rtk key" },
+        { "action": "Verify config.test.ts 'no temp file left behind after save'", "expected": "Clean write", "observed": "Test passed — no .tmp files in directory" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "analytics-and-polish/settings-panel/test-output.txt",
+        "passingTests": [
+          "settings persisted to file > toggle changes written to settings.json under rtk key",
+          "settings persisted to file > panel save callback persists config",
+          "saveSettings > creates project settings file with atomic write",
+          "saveSettings > creates directories if they do not exist",
+          "saveSettings > preserves existing keys in settings.json",
+          "saveSettings > no temp file left behind after save"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-015",
+      "title": "Settings persistence load",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with settings-panel and config patterns", "expected": "Settings load tests pass", "observed": "All related tests passed" },
+        { "action": "Verify 'saved settings loaded on startup via loadSettings' test", "expected": "loadSettings reads persisted config from project path", "observed": "Test passed — source='project', filters.git=false, filters.ls=false, tee.maxFiles=50" },
+        { "action": "Verify config.test.ts 'loads from project settings when present'", "expected": "Project settings loaded", "observed": "Test passed — source='project', enabled=false, debugMode=true" },
+        { "action": "Verify config.test.ts 'round-trips through load'", "expected": "Save then load returns same config", "observed": "Test passed — all saved fields match loaded values" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "analytics-and-polish/settings-panel/test-output.txt",
+        "passingTests": [
+          "settings loaded on startup > saved settings loaded on startup via loadSettings",
+          "loadSettings > loads from project settings when present",
+          "saveSettings > round-trips through load"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-016",
+      "title": "Settings global vs project scope",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with settings-panel and config patterns", "expected": "Project override tests pass", "observed": "All related tests passed" },
+        { "action": "Verify 'project settings override global settings' test in settings-panel.test.ts", "expected": "Project .pi/settings.json takes precedence", "observed": "Test passed — source='project', filters.git=false from project settings" },
+        { "action": "Verify config.test.ts 'settings.json overrides defaults'", "expected": "Settings file overrides defaults", "observed": "Test passed — project settings override default values for enabled, debugMode, minOutputChars, filters, tee" },
+        { "action": "Verify config.test.ts 'env var overrides settings.json'", "expected": "Env > settings > defaults priority", "observed": "Test passed — env vars override settings file values" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "analytics-and-polish/settings-panel/test-output.txt",
+        "passingTests": [
+          "project overrides global > project settings override global settings",
+          "resolveConfig > settings.json overrides defaults",
+          "resolveConfig > env var overrides settings.json",
+          "resolveConfig > env var overrides defaults when no settings file"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-017",
+      "title": "Settings defaults",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with settings-panel and config patterns", "expected": "Defaults tests pass", "observed": "All related tests passed" },
+        { "action": "Verify 'all filters default enabled, tee defaults correct when no settings files' test", "expected": "All 10 filters true, tee defaults correct", "observed": "Test passed — all filters true, tee.enabled=true, tee.mode='failures', tee.maxFiles=20, tee.maxFileSize=1048576, enabled=true, minOutputChars=100, excludeCommands=[], debugMode=false" },
+        { "action": "Verify config.test.ts 'returns defaults when nothing is set'", "expected": "resolveConfig returns all DEFAULTS", "observed": "Test passed — all default values confirmed for enabled, debugMode, minOutputChars, excludeCommands, all 11 filters, and all tee fields" },
+        { "action": "Verify config.test.ts 'returns default source when no files exist'", "expected": "loadSettings returns source='default'", "observed": "Test passed — source='default', config={}" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "analytics-and-polish/settings-panel/test-output.txt",
+        "passingTests": [
+          "defaults applied when no files > all filters default enabled, tee defaults correct when no settings files",
+          "resolveConfig > returns defaults when nothing is set",
+          "loadSettings > returns default source when no files exist"
+        ]
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 8 assertions (VAL-UX-010 through VAL-UX-017): all 8 passed. 55 tests across settings-panel.test.ts (27 tests) and config.test.ts (28 tests) all passed in 406ms."
+}

@@ -1,0 +1,34 @@
+{
+  "milestone": "analytics-and-polish",
+  "round": 1,
+  "status": "pass",
+  "assertionsSummary": {
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "blocked": 0
+  },
+  "passedAssertions": [
+    "VAL-UX-001",
+    "VAL-UX-002",
+    "VAL-UX-003",
+    "VAL-UX-004",
+    "VAL-UX-005",
+    "VAL-UX-006",
+    "VAL-UX-007",
+    "VAL-UX-008",
+    "VAL-UX-009",
+    "VAL-UX-010",
+    "VAL-UX-011",
+    "VAL-UX-012",
+    "VAL-UX-013",
+    "VAL-UX-014",
+    "VAL-UX-015",
+    "VAL-UX-016",
+    "VAL-UX-017"
+  ],
+  "failedAssertions": [],
+  "blockedAssertions": [],
+  "appliedUpdates": [],
+  "previousRound": null
+}

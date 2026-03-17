@@ -1,0 +1,84 @@
+{
+  "groupId": "discover-command",
+  "testedAt": "2026-03-17T13:27:41Z",
+  "isolation": {
+    "appRoot": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testFile": "test/discover.test.ts",
+    "runCommand": "bun run test -- discover",
+    "database": "in-memory SQLite"
+  },
+  "toolsUsed": ["vitest", "bun"],
+  "assertions": [
+    {
+      "id": "VAL-UX-007",
+      "title": "/rtk discover identifies unfiltered commands",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with discover filter",
+          "expected": "All tests in 'discover identifies unfiltered commands' describe block pass",
+          "observed": "6 tests passed: identifies commands that could have been filtered, groups similar commands together, shows the applicable filter name, shows run count per command pattern, does not list commands that have no matching filter, shows header text about missed opportunities"
+        }
+      ],
+      "evidence": {
+        "testOutput": "analytics-and-polish/discover-command/test-output.txt",
+        "consoleErrors": "none",
+        "matchingTests": [
+          "identifies commands that could have been filtered",
+          "groups similar commands together",
+          "shows the applicable filter name",
+          "shows run count per command pattern",
+          "does not list commands that have no matching filter",
+          "shows header text about missed opportunities"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-008",
+      "title": "/rtk discover estimates savings",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with discover filter",
+          "expected": "All tests in 'discover estimates savings' describe block pass",
+          "observed": "3 tests passed: shows estimated savings per unfiltered command type, shows estimated token savings, different commands get different savings estimates"
+        }
+      ],
+      "evidence": {
+        "testOutput": "analytics-and-polish/discover-command/test-output.txt",
+        "consoleErrors": "none",
+        "matchingTests": [
+          "shows estimated savings per unfiltered command type",
+          "shows estimated token savings",
+          "different commands get different savings estimates"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-009",
+      "title": "/rtk discover total estimate",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with discover filter",
+          "expected": "All tests in 'discover total estimate' describe block pass",
+          "observed": "2 tests passed: includes total estimated savings summary, total is sum of individual command estimates"
+        }
+      ],
+      "evidence": {
+        "testOutput": "analytics-and-polish/discover-command/test-output.txt",
+        "consoleErrors": "none",
+        "matchingTests": [
+          "includes total estimated savings summary",
+          "total is sum of individual command estimates"
+        ]
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 3 assertions: 3 passed. All 14 discover tests (6 for VAL-UX-007, 3 for VAL-UX-008, 2 for VAL-UX-009, plus 3 edge case tests) passed successfully in 11ms."
+}

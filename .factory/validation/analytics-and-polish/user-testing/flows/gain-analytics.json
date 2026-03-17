@@ -1,0 +1,139 @@
+{
+  "groupId": "gain-analytics",
+  "testedAt": "2026-03-17T13:27:43.000Z",
+  "isolation": {
+    "appRoot": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testFile": "test/gain.test.ts",
+    "command": "bun run test -- gain",
+    "database": "in-memory SQLite (:memory:)"
+  },
+  "toolsUsed": ["vitest", "bun"],
+  "assertions": [
+    {
+      "id": "VAL-UX-001",
+      "title": "/rtk gain table format",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with gain pattern", "expected": "gain table format tests pass", "observed": "4/4 tests passed in 'gain table format' describe block" },
+        { "action": "Verify column headers tested", "expected": "Tests check for Command, Runs, Raw, Filtered, Saved% columns", "observed": "Test 'has correct columns' asserts all column names present" },
+        { "action": "Verify bar chart tested", "expected": "Tests check for bar chart characters", "observed": "Test 'shows bar chart characters' asserts █░ block chars present" }
+      ],
+      "evidence": {
+        "testOutput": "analytics-and-polish/gain-analytics/test-output.txt",
+        "testsMatched": [
+          "gain table format > has correct columns: Command, Runs, Raw, Filtered, Saved%, bar chart",
+          "gain table format > includes period label in header",
+          "gain table format > includes separator lines",
+          "gain table format > shows bar chart characters for each command"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-002",
+      "title": "/rtk gain correct percentages",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with gain pattern", "expected": "gain correct percentages tests pass", "observed": "3/3 tests passed in 'gain correct percentages' describe block" },
+        { "action": "Verify percentage calculation tested", "expected": "Tests insert known data and assert correct %", "observed": "Tests verify 80%, 75%, 90% savings for known raw/filtered ratios" }
+      ],
+      "evidence": {
+        "testOutput": "analytics-and-polish/gain-analytics/test-output.txt",
+        "testsMatched": [
+          "gain correct percentages > shows correct savings percentage per command",
+          "gain correct percentages > shows correct savings for mixed commands",
+          "gain correct percentages > calculates percentage from raw tokens vs filtered tokens"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-003",
+      "title": "/rtk gain total summary row",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with gain pattern", "expected": "gain total summary row tests pass", "observed": "3/3 tests passed in 'gain total summary row' describe block" },
+        { "action": "Verify total row tested", "expected": "Tests check total row exists with correct aggregate values", "observed": "Tests verify 'Total' line has correct run count (3) and correct aggregate savings (80%)" }
+      ],
+      "evidence": {
+        "testOutput": "analytics-and-polish/gain-analytics/test-output.txt",
+        "testsMatched": [
+          "gain total summary row > includes total row at bottom",
+          "gain total summary row > total row has correct aggregate run count",
+          "gain total summary row > total row has correct aggregate savings percentage"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-004",
+      "title": "/rtk gain time period filtering",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with gain pattern", "expected": "gain time period filtering tests pass", "observed": "5/5 tests passed in 'gain time period filtering' describe block" },
+        { "action": "Verify 24h filter", "expected": "Test inserts recent + old data, 24h excludes old", "observed": "Test seeds 2-day-old data and asserts it's excluded from 24h output" },
+        { "action": "Verify 7d filter", "expected": "Test inserts 10-day-old data, 7d excludes it", "observed": "Test seeds 10-day-old data and asserts it's excluded from 7d output" },
+        { "action": "Verify 30d filter", "expected": "Test inserts 60-day-old data, 30d excludes it", "observed": "Test seeds 60-day-old data and asserts it's excluded from 30d output" },
+        { "action": "Verify all period", "expected": "Test confirms all data included regardless of age", "observed": "Test seeds 60-day-old data and asserts it's included in 'all' output" }
+      ],
+      "evidence": {
+        "testOutput": "analytics-and-polish/gain-analytics/test-output.txt",
+        "testsMatched": [
+          "gain time period filtering > 24h period excludes old data",
+          "gain time period filtering > 7d period excludes data older than 7 days",
+          "gain time period filtering > 30d period excludes data older than 30 days",
+          "gain time period filtering > all period includes all data",
+          "gain time period filtering > defaults to all when no period specified"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-005",
+      "title": "/rtk gain session savings line",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with gain pattern", "expected": "gain session savings line tests pass", "observed": "3/3 tests passed in 'gain session savings line' describe block" },
+        { "action": "Verify session line with K suffix", "expected": "Tests check Session line with ~NK format", "observed": "Tests verify session line present with K suffix for 5000 tokens (~5K) and raw number for 113000" }
+      ],
+      "evidence": {
+        "testOutput": "analytics-and-polish/gain-analytics/test-output.txt",
+        "testsMatched": [
+          "gain session savings line > shows session savings when > 0",
+          "gain session savings line > shows session savings with K suffix for thousands",
+          "gain session savings line > shows session savings line even when 0"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-UX-006",
+      "title": "/rtk gain empty database",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with gain pattern", "expected": "gain handles empty database tests pass", "observed": "4/4 tests passed in 'gain handles empty database' describe block" },
+        { "action": "Verify helpful message on empty DB", "expected": "Test checks for 'no data/commands/runs' message", "observed": "Test asserts output matches /[Nn]o (data|commands|runs)|[Nn]othing/" },
+        { "action": "Verify no crash on empty DB", "expected": "formatGainOutput does not throw", "observed": "Test wraps call in expect().not.toThrow() and passes" }
+      ],
+      "evidence": {
+        "testOutput": "analytics-and-polish/gain-analytics/test-output.txt",
+        "testsMatched": [
+          "gain handles empty database > shows helpful message when no data",
+          "gain handles empty database > does not crash on empty database",
+          "gain handles empty database > empty database with non-zero session savings still shows session line",
+          "gain handles empty database > empty database for specific period shows helpful message"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 6 assertions (VAL-UX-001 through VAL-UX-006): all 6 passed. 25/25 tests passed in test/gain.test.ts covering table format, percentage calculation, total row, time period filtering, session savings line, and empty database handling."
+}
