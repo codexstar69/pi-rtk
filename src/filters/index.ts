@@ -10,6 +10,7 @@ import { createGitDiffFilter } from "./git-diff.js";
 import { createGitLogFilter } from "./git-log.js";
 import { createGitActionFilter } from "./git-action.js";
 import { createGitBranchFilter } from "./git-branch.js";
+import { createLsFilter } from "./ls.js";
 
 /** Result returned by every filter's apply(). */
 export interface FilterResult {
@@ -41,6 +42,7 @@ const ALL_FILTERS: Filter[] = [
   createGitLogFilter(),
   createGitActionFilter(),
   createGitBranchFilter(),
+  createLsFilter(),
 ];
 
 /** Register a filter (used by filter modules during setup). */
