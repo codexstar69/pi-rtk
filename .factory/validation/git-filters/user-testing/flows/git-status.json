@@ -1,0 +1,120 @@
+{
+  "groupId": "git-status",
+  "testedAt": "2026-03-17T11:10:03.000Z",
+  "isolation": {
+    "projectDir": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testCommand": "bun run test -- git-status",
+    "surface": "vitest unit tests (in-memory, no services)"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": [
+    {
+      "id": "VAL-GIT-001",
+      "title": "git status happy path",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with git-status pattern", "expected": "Test 'compacts typical git status with >50% savings' passes", "observed": "Test passed — verifies emoji groups (✅ Staged, 📝 Modified, ❓ Untracked), file counts, branch info, and filteredChars < rawChars * 0.5" }
+      ],
+      "evidence": {
+        "testName": "compacts typical git status with >50% savings",
+        "testFile": "test/git-status.test.ts",
+        "testOutput": "git-filters/git-status/test-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-002",
+      "title": "git status clean repo",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with git-status pattern", "expected": "Test 'clean status produces branch line only' passes", "observed": "Test passed — verifies branch line present, no file section emojis (✅/📝/❓/🗑️) in output" }
+      ],
+      "evidence": {
+        "testName": "clean status produces branch line only",
+        "testFile": "test/git-status.test.ts",
+        "testOutput": "git-filters/git-status/test-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-003",
+      "title": "git status large output",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with git-status pattern", "expected": "Test '50+ files inline with >60% savings' passes", "observed": "Test passed — verifies 55 total files (25 staged-modified + 5 staged-new + 15 modified + 10 untracked), inline listing with '+20 more' truncation indicator, and filteredChars < rawChars * 0.4" }
+      ],
+      "evidence": {
+        "testName": "50+ files inline with >60% savings",
+        "testFile": "test/git-status.test.ts",
+        "testOutput": "git-filters/git-status/test-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-004",
+      "title": "git status error preservation",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with git-status pattern", "expected": "Test 'fatal error preserved' passes", "observed": "Test passed — verifies 'fatal:' and 'not a git repository' preserved in filtered output" }
+      ],
+      "evidence": {
+        "testName": "fatal error preserved",
+        "testFile": "test/git-status.test.ts",
+        "testOutput": "git-filters/git-status/test-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-005",
+      "title": "git status tracking info",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with git-status pattern", "expected": "Test 'ahead/behind info in branch line' passes", "observed": "Test passed — three sub-tests verify ahead-only ('ahead 3'), behind-only ('behind 7'), and diverged ('ahead 3' + 'behind 5') all appear in branch line" }
+      ],
+      "evidence": {
+        "testName": "ahead/behind info in branch line (+ behind info in branch line + ahead and behind info in branch line)",
+        "testFile": "test/git-status.test.ts",
+        "testOutput": "git-filters/git-status/test-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-006",
+      "title": "git status detached HEAD",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with git-status pattern", "expected": "Test 'detached HEAD shows hash' passes", "observed": "Test passed — two sub-tests verify short hash (abc1234) and full hash (a1b2c3d4e5f6) both shown with 📌 emoji" }
+      ],
+      "evidence": {
+        "testName": "detached HEAD shows hash (+ detached HEAD at full hash)",
+        "testFile": "test/git-status.test.ts",
+        "testOutput": "git-filters/git-status/test-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-007",
+      "title": "git status unicode filenames",
+      "status": "pass",
+      "steps": [
+        { "action": "Run vitest with git-status pattern", "expected": "Test 'unicode filenames in output' passes", "observed": "Test passed — verifies Japanese (日本語.md), German (über-config.ts), Chinese (中文文件.txt), and Cyrillic (кириллица.rs) filenames preserved verbatim" }
+      ],
+      "evidence": {
+        "testName": "unicode filenames in output",
+        "testFile": "test/git-status.test.ts",
+        "testOutput": "git-filters/git-status/test-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 7 assertions: 7 passed, 0 failed, 0 blocked. All git-status filter assertions verified through vitest unit tests. 17/17 tests passed in 4ms."
+}

@@ -1,0 +1,120 @@
+{
+  "groupId": "git-log-action-branch",
+  "testedAt": "2026-03-17T11:10:10.000Z",
+  "isolation": {
+    "projectDir": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testRunner": "vitest via bun run test",
+    "environment": "in-memory, fully isolated"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": [
+    {
+      "id": "VAL-GIT-014",
+      "title": "git log happy path — 10-commit log produces 10 oneline entries with >50% savings",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- git-log", "expected": "Test 'log produces oneline format' passes", "observed": "Test passed — 14/14 tests pass in git-log.test.ts" }
+      ],
+      "evidence": {
+        "testName": "git-log filter > log produces oneline format",
+        "testFile": "test/git-log.test.ts",
+        "rawOutput": "git-filters/git-log-action-branch/git-log-test-output.txt",
+        "details": "Test generates 10 verbose log entries, verifies filter produces 10 oneline entries each containing short hash and subject, and confirms filteredChars < rawChars * 0.5 (>50% savings)"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-015",
+      "title": "git log truncation — 50 commits shows 20 entries plus truncation indicator",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- git-log", "expected": "Test 'log truncated at 20 commits' passes", "observed": "Test passed — 14/14 tests pass in git-log.test.ts" }
+      ],
+      "evidence": {
+        "testName": "git-log filter > log truncated at 20 commits",
+        "testFile": "test/git-log.test.ts",
+        "rawOutput": "git-filters/git-log-action-branch/git-log-test-output.txt",
+        "details": "Test generates 50 verbose log entries, verifies exactly 20 commit lines shown and output matches /+\\s*30\\s*more/i truncation indicator"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-016",
+      "title": "git log subject truncation — Subjects >80 chars truncated with ellipsis",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- git-log", "expected": "Test 'long subjects truncated' passes", "observed": "Test passed — 14/14 tests pass in git-log.test.ts" }
+      ],
+      "evidence": {
+        "testName": "git-log filter > long subjects truncated",
+        "testFile": "test/git-log.test.ts",
+        "rawOutput": "git-filters/git-log-action-branch/git-log-test-output.txt",
+        "details": "Test creates 120-char subject, verifies subject portion ≤83 chars (80 + '...') and contains ellipsis. Additional tests confirm 80-char subjects not truncated and short subjects preserved."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-017",
+      "title": "git push/pull/fetch/add/commit single-line ok — Each action produces ok ✓ {summary} with >80% savings",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- git-action", "expected": "Test 'each git action reduced to ok line' passes", "observed": "Test passed — 18/18 tests pass in git-action.test.ts" }
+      ],
+      "evidence": {
+        "testName": "git-action filter > each git action type produces single-line output",
+        "testFile": "test/git-action.test.ts",
+        "rawOutput": "git-filters/git-log-action-branch/git-action-test-output.txt",
+        "details": "Test verifies all 5 action types (push, pull, fetch, add, commit) each produce a single line matching /ok\\s*✓/. Individual tests for push, pull, fetch, commit verify filteredChars < rawChars * 0.2 (>80% savings)."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-018",
+      "title": "git push rejected preserves error — Rejected push preserves rejection reason",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- git-action", "expected": "Test 'rejected push preserves error' passes", "observed": "Test passed — 18/18 tests pass in git-action.test.ts" }
+      ],
+      "evidence": {
+        "testName": "git-action filter > rejected push preserves error",
+        "testFile": "test/git-action.test.ts",
+        "rawOutput": "git-filters/git-log-action-branch/git-action-test-output.txt",
+        "details": "Test uses non-fast-forward rejection output, verifies 'rejected' is in output and result does NOT match /^ok\\s*✓/. Additional test covers force-denied with protected branch hook."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-019",
+      "title": "git branch compact listing — Branch list is compact with current branch marked",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- git-branch", "expected": "Test 'branches listed compactly with * marker' passes", "observed": "Test passed — 14/14 tests pass in git-branch.test.ts" }
+      ],
+      "evidence": {
+        "testName": "git-branch filter > branches listed compactly with * marker",
+        "testFile": "test/git-branch.test.ts",
+        "rawOutput": "git-filters/git-log-action-branch/git-branch-test-output.txt",
+        "details": "Test provides 6 branches with main as current, verifies '*' marker present, 'main' present, and all other branches (develop, feature/auth, feature/dashboard, release/v1.0, staging) present in output."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-GIT-020",
+      "title": "git branch truncation — 50+ branches truncated with count",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- git-branch", "expected": "Test 'many branches truncated' passes", "observed": "Test passed — 14/14 tests pass in git-branch.test.ts" }
+      ],
+      "evidence": {
+        "testName": "git-branch filter > many branches truncated",
+        "testFile": "test/git-branch.test.ts",
+        "rawOutput": "git-filters/git-log-action-branch/git-branch-test-output.txt",
+        "details": "Test generates 60 branches, verifies current branch present with '*', output matches /+\\s*\\d+\\s*more/i truncation indicator, and branch count ≤50. Additional tests verify exactly 50 shows no truncation, 51 shows '+1 more', and current branch always visible even when beyond truncation limit."
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 7 assertions: 7 passed, 0 failed. All git-log (14 tests), git-action (18 tests), and git-branch (14 tests) passed successfully — 46 total tests green."
+}
