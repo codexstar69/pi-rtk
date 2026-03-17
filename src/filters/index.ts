@@ -21,6 +21,9 @@ import { createLintPyFilter } from "./lint-py.js";
 import { createLintRsFilter } from "./lint-rs.js";
 import { createGrepFilter } from "./grep.js";
 import { createJsonSchemaFilter } from "./json-schema.js";
+import { createDockerListFilter, createDockerLogsFilter } from "./docker.js";
+import { createNpmInstallFilter, createPipInstallFilter } from "./npm-install.js";
+import { createHttpFilter } from "./http.js";
 
 /** Result returned by every filter's apply(). */
 export interface FilterResult {
@@ -63,6 +66,11 @@ const ALL_FILTERS: Filter[] = [
   createLintRsFilter(),
   createGrepFilter(),
   createJsonSchemaFilter(),
+  createDockerListFilter(),
+  createDockerLogsFilter(),
+  createNpmInstallFilter(),
+  createPipInstallFilter(),
+  createHttpFilter(),
 ];
 
 /** Register a filter (used by filter modules during setup). */
