@@ -1,0 +1,26 @@
+{
+  "name": "pi-rtk",
+  "version": "0.1.0",
+  "description": "Token Killer for Pi",
+  "type": "module",
+  "license": "MIT",
+  "keywords": ["pi-package", "pi-extension"],
+  "files": ["index.ts", "src/**/*.ts"],
+  "pi": { "extensions": ["./index.ts"] },
+  "scripts": {
+    "test": "vitest run --dir test",
+    "test:watch": "vitest --dir test",
+    "prepublishOnly": "vitest run --dir test"
+  },
+  "dependencies": { "better-sqlite3": "^11.9.1" },
+  "peerDependencies": {
+    "@mariozechner/pi-ai": "*",
+    "@mariozechner/pi-coding-agent": "*",
+    "@sinclair/typebox": "*"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "vitest": "^3.0.0",
+    "typescript": "^5.7.0"
+  }
+}
