@@ -6,6 +6,7 @@
 import type { RtkConfig } from "../config.js";
 import { getFilterGroup } from "../config.js";
 import { createGitStatusFilter } from "./git-status.js";
+import { createGitDiffFilter } from "./git-diff.js";
 
 /** Result returned by every filter's apply(). */
 export interface FilterResult {
@@ -33,6 +34,7 @@ export interface Filter {
  */
 const ALL_FILTERS: Filter[] = [
   createGitStatusFilter(),
+  createGitDiffFilter(),
 ];
 
 /** Register a filter (used by filter modules during setup). */
