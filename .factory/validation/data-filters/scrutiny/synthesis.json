@@ -1,0 +1,51 @@
+{
+  "milestone": "data-filters",
+  "round": 1,
+  "status": "pass",
+  "validatorsRun": {
+    "test": { "passed": true, "command": "bun run test", "exitCode": 0 },
+    "typecheck": { "passed": true, "command": "bunx tsc --noEmit", "exitCode": 0 },
+    "lint": { "passed": true, "command": "echo \"no lint configured\"", "exitCode": 0 }
+  },
+  "reviewsSummary": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "failedFeatures": []
+  },
+  "blockingIssues": [],
+  "appliedUpdates": [],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Add convention: filters should use the shared strip() ANSI utility from src/utils.ts instead of defining local copies. Currently every filter file has its own identical strip() function (14+ copies). Either document this as intentional (self-contained filters) or add a shared import path.",
+      "evidence": "docker.ts, npm-install.ts, http.ts, grep.ts, test-js.ts, lint-tsc.ts, lint-rs.ts, lint-js.ts, lint-py.ts, test-go.ts, test-rs.ts, test-py.ts, log-dedup.ts all define identical local strip() functions. Noted in docker-npm-http-filters review.",
+      "isSystemic": true
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Add convention: document filter registry ordering dependency. The first-match-wins behavior means registration order in src/filters/index.ts determines which filter handles ambiguous commands (e.g., docker-logs vs log-dedup both match 'docker logs'). Workers should be aware that registering a new filter that overlaps with an existing one will shadow the existing filter if placed first.",
+      "evidence": "log-dedup filter matches 'docker logs' via LOG_CMD regex, but docker-logs filter is registered earlier and always intercepts first. The docker-logs filter also reimplements dedup logic inline instead of delegating. Noted in both log-dedup-filter and docker-npm-http-filters reviews.",
+      "isSystemic": true
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "The skill says 'Do NOT read IMPLEMENTATION.md' but workers read it to understand filter specifications.",
+      "reason": "This is a skill-level concern about the pi-rtk-worker skill, not an AGENTS.md or services.yaml issue. The deviation was justified — feature descriptions often summarize rather than fully specify behavior. This should be addressed in the skill itself if at all."
+    },
+    {
+      "observation": "IMPLEMENTATION.md has naming inconsistency (json.ts vs json-schema.ts in different sections).",
+      "reason": "This is a documentation inconsistency in IMPLEMENTATION.md, not actionable for AGENTS.md, services.yaml, or library. The codebase uses json-schema.ts consistently."
+    },
+    {
+      "observation": "IMPLEMENTATION.md specifies content-based detection for log-dedup ('output has > 50 lines with duplicates detected') but implementation uses command-based matching.",
+      "reason": "The command-based approach is arguably better (avoids scanning all output for duplicates) and is consistent with how all other filters work. The divergence from spec is a reasonable implementation decision, not a convention issue."
+    },
+    {
+      "observation": "Read filter 5000-char threshold could be configurable via config system.",
+      "reason": "This is a future enhancement suggestion, not a convention or documentation issue. The current hardcoded threshold is correct per spec."
+    }
+  ],
+  "previousRound": null
+}

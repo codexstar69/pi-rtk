@@ -1,0 +1,45 @@
+{
+  "featureId": "docker-npm-http-filters",
+  "reviewedAt": "2026-03-17T07:15:00.000Z",
+  "commitId": "1f06875",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Implementation correctly fulfills all four validation assertions (VAL-DATA-005, 006, 007, 018). Docker ps compacts hex IDs to 12 chars, docker logs dedup collapses 3+ identical lines with (xN) suffix, npm/bun/pnpm/pip install produces 'ok ✓ N packages installed (duration)' summaries with vulnerability preservation, and HTTP filter extracts status codes and body previews from curl/wget/xh output. Tests are comprehensive with 61 cases covering edge cases. Two non-blocking issues noted: docker logs uses inline dedup instead of delegating to the existing log-dedup filter (code duplication), and shortImageId() is dead code.",
+    "issues": [
+      {
+        "file": "src/filters/docker.ts",
+        "line": 66,
+        "severity": "non_blocking",
+        "description": "Feature description says 'docker logs delegates to log-dedup' but implementation has inline dedup logic (dedupLogs function at line 66-113) instead of calling the existing log-dedup filter. The log-dedup filter (src/filters/log-dedup.ts) already matches 'docker logs' commands and provides identical dedup behavior plus a summary line. Since docker-logs is registered before log-dedup in the registry, the inline implementation takes precedence. This is a code duplication issue — the dedup logic is maintained in two places. The inline version also lacks the summary line that log-dedup appends ('N unique lines (N total, N duplicates collapsed)')."
+      },
+      {
+        "file": "src/filters/docker.ts",
+        "line": 30,
+        "severity": "non_blocking",
+        "description": "shortImageId() function (lines 30-34) is defined but never called anywhere in the codebase — dead code. Only shortId() is used by the compactTable regex replacement."
+      },
+      {
+        "file": "src/filters/http.ts",
+        "line": 80,
+        "severity": "non_blocking",
+        "description": "For wget output, the status line is parsed correctly but 'inHeaders' is never set to true, so Content-Type headers from wget output won't be captured. This is low-impact since wget typically doesn't include response headers in its standard output format, but the inconsistency could confuse future maintainers."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The strip() ANSI-removal function is duplicated verbatim in docker.ts, npm-install.ts, and http.ts (and 10+ other filter files). This is a consistent existing pattern in the codebase — every filter module has its own copy. AGENTS.md and architecture.md don't mention this as a deliberate decision or suggest a shared utility. If intentional (to keep filters self-contained), it should be documented; if not, a shared utility module could reduce duplication.",
+      "evidence": "Grep for 'function strip' shows identical implementation in docker.ts:20, npm-install.ts:19, http.ts:18, grep.ts:20, test-js.ts:17, lint-tsc.ts:22, lint-rs.ts:22, lint-js.ts:22, lint-py.ts:22, test-go.ts:17, test-rs.ts:17, test-py.ts:17, log-dedup.ts:20"
+    },
+    {
+      "area": "conventions",
+      "observation": "The docker-logs filter duplicates the log-dedup filter's core algorithm instead of delegating. The feature description explicitly says 'docker logs delegates to log-dedup' but the worker noted in the transcript that log-dedup didn't exist yet and implemented inline. However, log-dedup was actually created by a prior feature (commit 65a6d30) and exists in the registry. The worker could have imported and reused it. Architecture.md should clarify whether filters should delegate to other filters or remain self-contained.",
+      "evidence": "docker.ts dedupLogs() (lines 66-113) reimplements the same algorithm as log-dedup.ts dedup() (lines 74-109). Both use timestamp normalization and 3+ threshold for collapsing. log-dedup.ts also matches 'docker logs' via LOG_CMD regex at line 117."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "PASS — All four validation assertions (VAL-DATA-005, 006, 007, 018) are properly fulfilled. Docker ps compacts IDs, docker logs collapses repeated lines, npm/bun/pnpm/pip install produces single-line summaries with vulnerability preservation, and HTTP filter extracts status + body preview. 61 tests cover core paths and edge cases. Three non-blocking issues: docker logs uses inline dedup instead of delegating to log-dedup (code duplication), shortImageId is dead code, and wget Content-Type extraction has a minor gap. No blocking issues found."
+}
