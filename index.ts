@@ -19,6 +19,7 @@ import {
   type PipelineState,
 } from "./src/pipeline.js";
 import { formatGainOutput } from "./src/gain.js";
+import { formatDiscoverOutput } from "./src/discover.js";
 import type { SavingsPeriod } from "./src/tracker.js";
 
 export default function (pi: ExtensionAPI) {
@@ -155,7 +156,18 @@ export default function (pi: ExtensionAPI) {
         return;
       }
 
-      // Future subcommands: discover, settings
+      if (sub === "discover") {
+        const db = getDb();
+        if (!db) {
+          ctx.ui.notify("RTK: Database not initialized. Start a session first.", "warning");
+          return;
+        }
+
+        const output = formatDiscoverOutput(db);
+        ctx.ui.notify(output, "info");
+        return;
+      }
+
       ctx.ui.notify(`RTK: Unknown subcommand "${sub}". Available: gain, discover, settings`, "warning");
     },
   });

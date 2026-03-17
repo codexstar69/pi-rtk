@@ -32,6 +32,7 @@ export interface RecordOptions {
 export class Tracker {
   private db: Database.Database;
   private insertStmt: Database.Statement;
+  private insertUnfilteredStmt: Database.Statement;
 
   constructor(db: Database.Database) {
     this.db = db;
@@ -40,6 +41,9 @@ export class Tracker {
          (command, filter_name, raw_chars, filt_chars, raw_tokens, filt_tokens, savings_pct, duration_ms, timestamp, session_id, cwd)
        VALUES
          (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    );
+    this.insertUnfilteredStmt = db.prepare(
+      `INSERT INTO unfiltered_commands (command, char_count, timestamp) VALUES (?, ?, ?)`,
     );
   }
 
@@ -70,6 +74,15 @@ export class Tracker {
       options.sessionId ?? null,
       options.cwd ?? null,
     );
+  }
+
+  /**
+   * Record an unfiltered command — a command that was executed but didn't
+   * match any filter. Used by /rtk discover to identify optimization
+   * opportunities.
+   */
+  recordUnfiltered(command: string, charCount: number): void {
+    this.insertUnfilteredStmt.run(command, charCount, Date.now());
   }
 
   /**

@@ -139,7 +139,17 @@ export function createToolResultHandler(
 
     // 8. Find matching filter (respecting config)
     const filter = findMatchingFilter(baseCommand, filters, state.config);
-    if (!filter) return undefined;
+    if (!filter) {
+      // Track as unfiltered for /rtk discover
+      if (state.tracker) {
+        try {
+          state.tracker.recordUnfiltered(baseCommand, cleanText.length);
+        } catch {
+          // Non-fatal
+        }
+      }
+      return undefined;
+    }
 
     // 9. Apply filter (catch errors → passthrough)
     let result: FilterResult;

@@ -29,5 +29,15 @@ export function runMigrations(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_runs_timestamp ON command_runs(timestamp);
     CREATE INDEX IF NOT EXISTS idx_runs_command ON command_runs(command);
+
+    CREATE TABLE IF NOT EXISTS unfiltered_commands (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      command    TEXT NOT NULL,
+      char_count INTEGER NOT NULL,
+      timestamp  INTEGER NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_unfiltered_timestamp ON unfiltered_commands(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_unfiltered_command ON unfiltered_commands(command);
   `);
 }
