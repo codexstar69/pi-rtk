@@ -57,7 +57,7 @@ describe("settings panel render", () => {
     // Should have a header
     expect(text).toContain("pi-rtk");
 
-    // Should list all 10 filter toggles
+    // Should list all 11 filter toggles
     expect(text).toContain("Git");
     expect(text).toContain("Ls");
     expect(text).toContain("Test");
@@ -68,6 +68,7 @@ describe("settings panel render", () => {
     expect(text).toContain("Npm");
     expect(text).toContain("Read");
     expect(text).toContain("Log Dedup");
+    expect(text).toContain("Http");
 
     // Should list tee config items
     expect(text).toContain("Tee");
@@ -247,14 +248,10 @@ describe("settings enter toggles value", () => {
     const panel = new RtkSettingsPanel(deps);
 
     // Navigate to tee enabled row
-    // We need to count: Scope + 10 filter toggles + tee mode row + tee enabled
-    // The exact ordering depends on implementation, so let's just verify toggling works
-    // by navigating to the right row
-    // Let's navigate far enough and look for the tee row
     // Scope(0), Git(1), Ls(2), Test(3), Lint(4), Grep(5), JSON(6), Docker(7),
-    // Npm(8), Read(9), LogDedup(10), TeeEnabled(11), TeeMode(12), MaxFiles(13), MaxSize(14)
-    // Go to TeeEnabled (index 11)
-    for (let i = 0; i < 11; i++) {
+    // Npm(8), Read(9), LogDedup(10), Http(11), TeeEnabled(12), TeeMode(13), MaxFiles(14), MaxSize(15)
+    // Go to TeeEnabled (index 12)
+    for (let i = 0; i < 12; i++) {
       panel.handleInput(KEY_DOWN);
     }
 

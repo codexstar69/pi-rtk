@@ -91,24 +91,24 @@ function parseGoTest(raw: string): ParsedResult {
     if (/^=== RUN\s+/.test(line)) continue;
 
     // "ok  	package/name	1.234s"
-    const pkgOk = line.match(/^ok\s+\S+\s+([\d.]+s)/);
+    const pkgOk = line.match(/^ok\s+(\S+)\s+([\d.]+s)/);
     if (pkgOk) {
-      packages.add("ok");
-      result.duration = pkgOk[1];
+      packages.add(pkgOk[1]);
+      result.duration = pkgOk[2];
       continue;
     }
 
     // "FAIL	package/name	1.234s"
-    const pkgFail = line.match(/^FAIL\s+\S+\s+([\d.]+s)/);
+    const pkgFail = line.match(/^FAIL\s+(\S+)\s+([\d.]+s)/);
     if (pkgFail) {
-      packages.add("fail");
-      result.duration = pkgFail[1];
+      packages.add(pkgFail[1]);
+      result.duration = pkgFail[2];
       continue;
     }
 
-    // "PASS" (standalone)
+    // "PASS" (standalone — single-package run without explicit package name)
     if (line.trim() === "PASS") {
-      packages.add("pass");
+      packages.add("_default_");
       continue;
     }
 

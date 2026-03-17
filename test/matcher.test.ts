@@ -114,22 +114,17 @@ describe("matchCommand", () => {
       expect(result!.filter).toBe("git-branch");
     });
 
-    it("matches git stash", () => {
-      const result = matchCommand("git stash");
-      expect(result).not.toBeNull();
-      expect(result!.filter).toBe("git-stash");
+    // git stash — no filter exists yet, so matcher should not match
+    it("returns null for git stash (no filter registered)", () => {
+      expect(matchCommand("git stash")).toBeNull();
     });
 
-    it("matches git stash pop", () => {
-      const result = matchCommand("git stash pop");
-      expect(result).not.toBeNull();
-      expect(result!.filter).toBe("git-stash");
+    it("returns null for git stash pop (no filter registered)", () => {
+      expect(matchCommand("git stash pop")).toBeNull();
     });
 
-    it("matches git stash list", () => {
-      const result = matchCommand("git stash list");
-      expect(result).not.toBeNull();
-      expect(result!.filter).toBe("git-stash");
+    it("returns null for git stash list (no filter registered)", () => {
+      expect(matchCommand("git stash list")).toBeNull();
     });
   });
 
@@ -434,16 +429,13 @@ describe("matchCommand", () => {
       expect(result!.filter).toBe("docker-list");
     });
 
-    it("matches docker compose", () => {
-      const result = matchCommand("docker compose up -d");
-      expect(result).not.toBeNull();
-      expect(result!.filter).toBe("docker-compose");
+    // docker compose — no filter exists yet, so matcher should not match
+    it("returns null for docker compose (no filter registered)", () => {
+      expect(matchCommand("docker compose up -d")).toBeNull();
     });
 
-    it("matches docker compose ps", () => {
-      const result = matchCommand("docker compose ps");
-      expect(result).not.toBeNull();
-      expect(result!.filter).toBe("docker-compose");
+    it("returns null for docker compose ps (no filter registered)", () => {
+      expect(matchCommand("docker compose ps")).toBeNull();
     });
 
     it("matches docker logs", () => {
@@ -458,22 +450,17 @@ describe("matchCommand", () => {
       expect(result!.filter).toBe("docker-logs");
     });
 
-    it("matches kubectl get pods", () => {
-      const result = matchCommand("kubectl get pods");
-      expect(result).not.toBeNull();
-      expect(result!.filter).toBe("kubectl");
+    // kubectl — no filter exists yet, so matcher should not match
+    it("returns null for kubectl get pods (no filter registered)", () => {
+      expect(matchCommand("kubectl get pods")).toBeNull();
     });
 
-    it("matches kubectl with namespace", () => {
-      const result = matchCommand("kubectl get pods -n production");
-      expect(result).not.toBeNull();
-      expect(result!.filter).toBe("kubectl");
+    it("returns null for kubectl with namespace (no filter registered)", () => {
+      expect(matchCommand("kubectl get pods -n production")).toBeNull();
     });
 
-    it("matches kubectl describe", () => {
-      const result = matchCommand("kubectl describe pod my-pod");
-      expect(result).not.toBeNull();
-      expect(result!.filter).toBe("kubectl");
+    it("returns null for kubectl describe (no filter registered)", () => {
+      expect(matchCommand("kubectl describe pod my-pod")).toBeNull();
     });
   });
 
@@ -695,16 +682,14 @@ describe("matchCommand", () => {
       expect(result!.filter).toBe("test-js");
     });
 
-    it("handles docker-compose (hyphenated)", () => {
-      const result = matchCommand("docker-compose up");
-      expect(result).not.toBeNull();
-      expect(result!.filter).toBe("docker-compose");
+    // docker-compose (hyphenated) — no filter registered
+    it("returns null for docker-compose hyphenated (no filter registered)", () => {
+      expect(matchCommand("docker-compose up")).toBeNull();
     });
 
-    it("handles git stash with subcommand apply", () => {
-      const result = matchCommand("git stash apply");
-      expect(result).not.toBeNull();
-      expect(result!.filter).toBe("git-stash");
+    // git stash apply — no filter registered
+    it("returns null for git stash apply (no filter registered)", () => {
+      expect(matchCommand("git stash apply")).toBeNull();
     });
   });
 });

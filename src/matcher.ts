@@ -34,7 +34,8 @@ const RULES: readonly MatchRule[] = [
   { pattern: /^git\s+(push|pull|fetch)\b/, filter: "git-action", confidence: 1.0 },
   { pattern: /^git\s+(add|commit)\b/, filter: "git-action", confidence: 1.0 },
   { pattern: /^git\s+branch\b/, filter: "git-branch", confidence: 1.0 },
-  { pattern: /^git\s+stash\b/, filter: "git-stash", confidence: 1.0 },
+  // TODO: add git-stash filter before re-enabling
+  // { pattern: /^git\s+stash\b/, filter: "git-stash", confidence: 1.0 },
 
   // ── ls / exa / eza ──────────────────────────────────────────────
   { pattern: /^(ls|exa|eza)\b/, filter: "ls", confidence: 1.0 },
@@ -71,11 +72,13 @@ const RULES: readonly MatchRule[] = [
   { pattern: /^cargo\s+(clippy|build)\b/, filter: "lint-rs", confidence: 1.0 },
 
   // ── Docker ──────────────────────────────────────────────────────
-  { pattern: /^docker\s+compose\b/, filter: "docker-compose", confidence: 1.0 },
-  { pattern: /^docker-compose\b/, filter: "docker-compose", confidence: 1.0 },
+  // TODO: add docker-compose filter before re-enabling
+  // { pattern: /^docker\s+compose\b/, filter: "docker-compose", confidence: 1.0 },
+  // { pattern: /^docker-compose\b/, filter: "docker-compose", confidence: 1.0 },
   { pattern: /^docker\s+(ps|images)\b/, filter: "docker-list", confidence: 1.0 },
   { pattern: /^docker\s+logs\b/, filter: "docker-logs", confidence: 1.0 },
-  { pattern: /^kubectl\b/, filter: "kubectl", confidence: 1.0 },
+  // TODO: add kubectl filter before re-enabling
+  // { pattern: /^kubectl\b/, filter: "kubectl", confidence: 1.0 },
 
   // ── Package managers (install) ──────────────────────────────────
   { pattern: /^(bun|npm|pnpm|yarn)\s+(install|add|i)\b/, filter: "npm-install", confidence: 1.0 },

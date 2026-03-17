@@ -98,8 +98,9 @@ export function getFilterGroup(filterName: string): keyof FilterGroupConfig {
   if (filterName === "read-filter") return "read";
   if (filterName === "log-dedup") return "logDedup";
   if (filterName === "http") return "http";
-  // Fallback — treat unknown as enabled by returning a group that's always on
-  return "git";
+  // Fallback — return the filter name itself so unknown filters are not
+  // aliased to any existing group (avoids disabling unknowns when e.g. "git" is off).
+  return filterName as keyof FilterGroupConfig;
 }
 
 // ── Config resolution ─────────────────────────────────────────────

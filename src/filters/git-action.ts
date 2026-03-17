@@ -49,7 +49,8 @@ function extractSummary(action: string, raw: string): string {
   switch (action) {
     case "push": {
       // Try to find branch update line: abc1234..def5678 main -> main
-      const refMatch = trimmed.match(/([a-f0-9]+\.\.[a-f0-9]+)\s+(\S+)\s*->\s*(\S+)/);
+      // Normal push uses ".." and forced push uses "..."
+      const refMatch = trimmed.match(/([a-f0-9]+\.{2,3}[a-f0-9]+)\s+(\S+)\s*->\s*(\S+)/);
       if (refMatch) return `${refMatch[2]} -> ${refMatch[3]}`;
       // Try to find tag push: [new tag] v1.0.0 -> v1.0.0
       const tagMatch = trimmed.match(/\[new tag\]\s+(\S+)/);

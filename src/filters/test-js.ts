@@ -161,7 +161,9 @@ function parseBunTest(raw: string): ParsedResult {
   // Count pass/fail from individual test lines
   for (const line of lines) {
     // "✓ test name [0.12ms]" or "(pass) test name"
+    // Skip suite-level summary lines like "✓ test/config.test.ts (28 tests) 6ms"
     if (/^\s*(✓|\(pass\))/.test(line)) {
+      if (/\(\d+\s+tests?\)/.test(line)) continue; // suite summary, not individual test
       result.passed++;
       continue;
     }

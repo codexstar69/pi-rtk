@@ -162,13 +162,34 @@ function buildSummary(files: FileDiff[]): string {
 }
 
 /**
- * Strip context lines, keeping only change lines (+/-) and
- * no-newline markers. This maximizes compression.
+ * Reduce context lines from the default 3 to 1.
+ * Keeps 1 context line before each change block and 1 after,
+ * plus all change lines (+/-) and no-newline markers.
  */
-function stripContext(lines: string[]): string[] {
-  return lines.filter(
-    (l) => l.startsWith("+") || l.startsWith("-") || l.startsWith("\\"),
-  );
+function reduceContext(lines: string[]): string[] {
+  const isChange = (l: string) =>
+    l.startsWith("+") || l.startsWith("-") || l.startsWith("\\");
+  const isContext = (l: string) => l.startsWith(" ");
+
+  // First pass: mark which context lines to keep.
+  // Keep a context line if it is immediately before or after a change line.
+  const keep = new Array<boolean>(lines.length).fill(false);
+
+  for (let i = 0; i < lines.length; i++) {
+    if (isChange(lines[i])) {
+      keep[i] = true;
+      // Keep 1 context line before this change
+      if (i > 0 && isContext(lines[i - 1])) {
+        keep[i - 1] = true;
+      }
+      // Keep 1 context line after this change
+      if (i + 1 < lines.length && isContext(lines[i + 1])) {
+        keep[i + 1] = true;
+      }
+    }
+  }
+
+  return lines.filter((_, i) => keep[i]);
 }
 
 /**
@@ -180,8 +201,8 @@ function formatHunk(file: string, hunk: Hunk): string[] {
   // Hunk header with file:line
   result.push(`@@ ${file}:${hunk.startLine} @@`);
 
-  // Strip context lines for maximum compression
-  const reduced = stripContext(hunk.lines);
+  // Reduce context lines from 3 to 1
+  const reduced = reduceContext(hunk.lines);
 
   if (reduced.length > MAX_HUNK_LINES) {
     // Show first SHOW_LINES lines, then truncation indicator

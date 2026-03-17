@@ -4,7 +4,6 @@
  */
 
 import type Database from "better-sqlite3";
-import { estimateTokens } from "./utils.js";
 
 /** Aggregate savings returned by getSavings(). */
 export interface SavingsAggregate {
@@ -57,8 +56,8 @@ export class Tracker {
     filteredChars: number,
     options: RecordOptions,
   ): void {
-    const rawTokens = estimateTokens("x".repeat(rawChars));
-    const filtTokens = estimateTokens("x".repeat(filteredChars));
+    const rawTokens = rawChars === 0 ? 0 : Math.ceil(rawChars / 4);
+    const filtTokens = filteredChars === 0 ? 0 : Math.ceil(filteredChars / 4);
     const savingsPct = rawChars > 0 ? ((rawChars - filteredChars) / rawChars) * 100 : 0;
 
     this.insertStmt.run(

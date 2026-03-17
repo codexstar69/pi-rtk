@@ -299,6 +299,77 @@ index abc1234..def5678 100644
     expect(filtered).toContain("new-name.ts");
   });
 
+  it("keeps 1 context line before and after each change block", () => {
+    const raw = `diff --git a/src/foo.ts b/src/foo.ts
+index abc1234..def5678 100644
+--- a/src/foo.ts
++++ b/src/foo.ts
+@@ -10,9 +10,9 @@ function example() {
+ context line 1
+ context line 2
+ context line 3
+-old line
++new line
+ context line 4
+ context line 5
+ context line 6
+`;
+
+    const { filtered } = filter.apply("git diff", raw);
+
+    // Should keep 1 context line before the change (line 3)
+    expect(filtered).toContain("context line 3");
+    // Should keep the change lines
+    expect(filtered).toContain("-old line");
+    expect(filtered).toContain("+new line");
+    // Should keep 1 context line after the change (line 4)
+    expect(filtered).toContain("context line 4");
+    // Should NOT keep the extra context lines (lines 1, 2, 5, 6)
+    expect(filtered).not.toContain("context line 1");
+    expect(filtered).not.toContain("context line 2");
+    expect(filtered).not.toContain("context line 5");
+    expect(filtered).not.toContain("context line 6");
+  });
+
+  it("keeps context between adjacent change blocks", () => {
+    const raw = `diff --git a/src/bar.ts b/src/bar.ts
+index abc1234..def5678 100644
+--- a/src/bar.ts
++++ b/src/bar.ts
+@@ -1,9 +1,9 @@ function test() {
+ before ctx 1
+ before ctx 2
+ before ctx 3
+-old A
++new A
+ middle ctx
+-old B
++new B
+ after ctx 1
+ after ctx 2
+ after ctx 3
+`;
+
+    const { filtered } = filter.apply("git diff", raw);
+
+    // 1 context before first change
+    expect(filtered).toContain("before ctx 3");
+    expect(filtered).not.toContain("before ctx 1");
+    expect(filtered).not.toContain("before ctx 2");
+    // Change lines
+    expect(filtered).toContain("-old A");
+    expect(filtered).toContain("+new A");
+    // Middle context is adjacent to both changes — kept
+    expect(filtered).toContain("middle ctx");
+    // Second change
+    expect(filtered).toContain("-old B");
+    expect(filtered).toContain("+new B");
+    // 1 context after last change
+    expect(filtered).toContain("after ctx 1");
+    expect(filtered).not.toContain("after ctx 2");
+    expect(filtered).not.toContain("after ctx 3");
+  });
+
   it("handles diff with no-newline-at-end-of-file marker", () => {
     const raw = `diff --git a/src/file.ts b/src/file.ts
 index abc1234..def5678 100644

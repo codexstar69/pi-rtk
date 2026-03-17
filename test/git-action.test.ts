@@ -224,6 +224,26 @@ nothing to commit, working tree clean
     expect(filtered).toContain("fetch");
   });
 
+  it("forced push (three dots) extracts branch summary", () => {
+    const raw = `Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 10 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 1.00 KiB | 1.00 MiB/s, done.
+Total 3 (delta 1), reused 0 (delta 0), pack-reused 0
+To github.com:user/repo.git
+ + abc1234...def5678 feature -> feature (forced update)
+`;
+
+    const { filtered, rawChars, filteredChars } = filter.apply("git push --force", raw);
+
+    expect(filtered).toMatch(/ok\s*✓/);
+    expect(filtered).toContain("push");
+    expect(filtered).toContain("feature -> feature");
+    // >80% savings
+    expect(filteredChars).toBeLessThan(rawChars * 0.2);
+  });
+
   it("git push with tags", () => {
     const raw = `Enumerating objects: 1, done.
 Counting objects: 100% (1/1), done.

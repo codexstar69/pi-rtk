@@ -7,11 +7,11 @@
  *
  * Rows:
  *   0     — Scope (global/project toggle)
- *   1-10  — Filter toggles (git, ls, test, lint, grep, json, docker, npm, read, logDedup)
- *   11    — Tee enabled (boolean)
- *   12    — Tee mode (failures/all toggle)
- *   13    — Tee maxFiles (number)
- *   14    — Tee maxFileSize (number)
+ *   1-11  — Filter toggles (git, ls, test, lint, grep, json, docker, npm, read, logDedup, http)
+ *   12    — Tee enabled (boolean)
+ *   13    — Tee mode (failures/all toggle)
+ *   14    — Tee maxFiles (number)
+ *   15    — Tee maxFileSize (number)
  */
 
 import { matchesKey, Key, truncateToWidth } from "@mariozechner/pi-tui";
@@ -55,7 +55,8 @@ const ROWS: SettingRow[] = [
   { label: "Npm", type: "filter-bool", key: "npm", description: "Package install filters" },
   { label: "Read", type: "filter-bool", key: "read", description: "Comment stripping for read" },
   { label: "Log Dedup", type: "filter-bool", key: "logDedup", description: "Log line deduplication" },
-  // Rows 11-14: Tee config
+  { label: "Http", type: "filter-bool", key: "http", description: "HTTP request/response filters" },
+  // Rows 12-15: Tee config
   { label: "Tee", type: "tee-bool", key: "enabled", description: "Save raw output on errors" },
   { label: "Tee Mode", type: "tee-mode", key: "mode", description: "When to save: failures or all" },
   { label: "Max Files", type: "tee-number", key: "maxFiles", description: "Max tee files to keep", min: 1, max: 100, step: 1 },
@@ -150,7 +151,7 @@ export class RtkSettingsPanel {
       }
 
       // Separator between sections
-      if (i === 0 || i === 10) {
+      if (i === 0 || i === 11) {
         lines.push(t(dim("  " + "\u2500".repeat(Math.min(w - 4, 40)))));
       }
     }

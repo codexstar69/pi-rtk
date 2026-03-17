@@ -141,9 +141,9 @@ function stripCStyle(text: string): string {
 
       // Check for block comment start: /* or /**
       if (ch === "/" && line[j + 1] === "*") {
-        if (line[j + 2] === "*" && line[j + 3] !== "/") {
-          // Doc comment /** ... — preserve
-          const endIdx = line.indexOf("*/", j + 3);
+        if (line[j + 2] === "*") {
+          // Doc comment /** ... — preserve (including /***/)
+          const endIdx = line.indexOf("*/", j + 2);
           if (endIdx !== -1) {
             // Single-line doc comment
             processed += line.slice(j, endIdx + 2);

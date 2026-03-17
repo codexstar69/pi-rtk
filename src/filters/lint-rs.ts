@@ -108,7 +108,7 @@ function parseClippyErrors(raw: string): ClippyError[] {
       // Look for lint name in "= note: `#[warn(clippy::lint_name)]`" or `#[deny(...)]`
       let lint = errorCode || "unknown";
       let k = i + 1;
-      while (k < lines.length && k < i + 15) {
+      while (k < lines.length && k < i + 30) {
         const noteMatch = lines[k].match(/=\s+note:\s+`#\[(?:warn|deny|forbid|allow)\((.+?)\)\]`/);
         if (noteMatch) {
           lint = noteMatch[1];
