@@ -410,6 +410,50 @@ describe("integration: tool_result pipeline", () => {
     expect(text).toContain(".txt]");
   });
 
+  // ── excludeCommands: pipeline skips filtering when command matches ──
+  it("excludeCommands causes passthrough, no tracking", () => {
+    state.config = makeConfig({
+      excludeCommands: ["git status"],
+    });
+    const callHandler = createToolCallHandler(state);
+    const gitFilter = createMockFilter("git-status", /^git\s+status/, 0.3);
+    const resultHandler = createToolResultHandler(state, [gitFilter]);
+
+    callHandler(bashToolCallEvent("tc-excl", "git status"));
+    const rawText = "On branch main\n" + "x".repeat(300);
+    const result = resultHandler(
+      toolResultEvent("tc-excl", "bash", rawText),
+      ctx,
+    );
+
+    // Should passthrough (undefined)
+    expect(result).toBeUndefined();
+
+    // No tracking
+    const savings = tracker.getSavings("all");
+    expect(savings.totalRuns).toBe(0);
+  });
+
+  it("excludeCommands does not affect non-matching commands", () => {
+    state.config = makeConfig({
+      excludeCommands: ["npm install"],
+    });
+    const callHandler = createToolCallHandler(state);
+    const gitFilter = createMockFilter("git-status", /^git\s+status/, 0.3);
+    const resultHandler = createToolResultHandler(state, [gitFilter]);
+
+    callHandler(bashToolCallEvent("tc-excl2", "git status"));
+    const rawText = "On branch main\n" + "x".repeat(300);
+    const result = resultHandler(
+      toolResultEvent("tc-excl2", "bash", rawText),
+      ctx,
+    );
+
+    // Should be filtered (not excluded)
+    expect(result).toBeDefined();
+    expect(result!.content).toBeDefined();
+  });
+
   // ── VAL-CROSS-007: Config disable passthrough ────────────────────
   it("disabled group causes passthrough, no tracking", () => {
     state.config = makeConfig({

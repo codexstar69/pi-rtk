@@ -333,3 +333,34 @@ describe("grep filter — combined", () => {
     expect(filtered).toContain("13 matches in 5 files");
   });
 });
+
+// ── noLineNum false positive guard ───────────────────────────────
+
+describe("grep filter — noLineNum false positives", () => {
+  it("does not treat 'Error: something' as file:text", () => {
+    const raw = "Error: something went wrong\nWarning: deprecated function\n";
+    const { filtered } = filter.apply("rg pattern", raw);
+    // These should NOT be parsed as matches
+    expect(filtered).toBe("");
+  });
+
+  it("does not treat 'TypeError: null is not an object' as a match", () => {
+    const raw = "TypeError: null is not an object\n";
+    const { filtered } = filter.apply("grep pattern", raw);
+    expect(filtered).toBe("");
+  });
+
+  it("still parses valid file:text without line numbers", () => {
+    const raw = "src/foo.ts:  const TODO = true;\nsrc/bar.ts:  // TODO fix\n";
+    const { filtered } = filter.apply("grep -r TODO", raw);
+    expect(filtered).toContain("src/foo.ts:");
+    expect(filtered).toContain("src/bar.ts:");
+    expect(filtered).toContain("2 matches in 2 files");
+  });
+
+  it("parses dotfile paths correctly", () => {
+    const raw = ".eslintrc.js:  rule: 'off'\n";
+    const { filtered } = filter.apply("grep -r rule", raw);
+    expect(filtered).toContain(".eslintrc.js:");
+  });
+});

@@ -938,6 +938,36 @@ describe("test-go with failures", () => {
   });
 });
 
+// Multi-package go test output
+const GO_MULTI_PACKAGE = `
+=== RUN   TestAdd
+--- PASS: TestAdd (0.00s)
+=== RUN   TestSubtract
+--- PASS: TestSubtract (0.00s)
+ok  	github.com/user/project/math	0.100s
+=== RUN   TestParse
+--- PASS: TestParse (0.00s)
+=== RUN   TestFormat
+--- PASS: TestFormat (0.00s)
+ok  	github.com/user/project/parser	0.200s
+=== RUN   TestConnect
+--- PASS: TestConnect (0.00s)
+ok  	github.com/user/project/db	0.150s
+=== RUN   TestHandler
+--- PASS: TestHandler (0.00s)
+ok  	github.com/user/project/api	0.300s
+`;
+
+describe("test-go multi-package suite counting", () => {
+  it("counts each unique package as a suite", () => {
+    const result = goFilter.apply("go test ./...", GO_MULTI_PACKAGE);
+    expect(result.filtered).toMatch(/^✓/);
+    // 4 unique packages → 4 suites
+    expect(result.filtered).toContain("4 suites");
+    expect(result.filtered).toContain("6 tests passed");
+  });
+});
+
 // Large go test output for savings
 function generateLargeGoOutput(numTests: number, numFailed: number): string {
   const lines: string[] = [];

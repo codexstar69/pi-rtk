@@ -341,6 +341,30 @@ describe("tree filter", () => {
   });
 });
 
+  it("treats Makefile, Dockerfile, and .gitignore as files, not directories", () => {
+    const raw = `.
+├── Makefile
+├── Dockerfile
+├── .gitignore
+├── src
+│   ├── main.ts
+│   └── utils.ts
+└── README.md
+
+1 directory, 6 files`;
+
+    const result = filter.apply("tree", raw);
+
+    // These extensionless files should appear in the output as files
+    expect(result.filtered).toContain("Makefile");
+    expect(result.filtered).toContain("Dockerfile");
+    expect(result.filtered).toContain(".gitignore");
+    expect(result.filtered).toContain("README.md");
+    // src should be recognized as a directory since it has children
+    expect(result.filtered).toContain("src/");
+  });
+});
+
 // ── Extension breakdown summary ───────────────────────────────────
 
 describe("extension breakdown summary", () => {

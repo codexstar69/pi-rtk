@@ -686,4 +686,100 @@ describe("read-filter edge cases", () => {
     expect(filtered).toContain("https://example.com");
     expect(filtered).not.toContain("actual comment");
   });
+
+  it("preserves empty doc comment /***/ as a doc comment", () => {
+    const raw = makeLargeFile([
+      "/***/",
+      "function foo() {}",
+      "/* regular block comment */",
+      "const x = 1;",
+    ]);
+
+    const { filtered } = filter.apply("read:/project/file.ts", raw);
+    expect(filtered).toContain("/***/");
+    expect(filtered).toContain("function foo() {}");
+    expect(filtered).not.toContain("regular block comment");
+  });
+
+  it("preserves /***/ in CSS", () => {
+    const raw = makeLargeFile([
+      "/***/",
+      "body { color: red; }",
+      "/* stripped */",
+    ]);
+
+    const { filtered } = filter.apply("read:/project/style.css", raw);
+    expect(filtered).toContain("/***/");
+    expect(filtered).not.toContain("stripped");
+  });
+
+  it("preserves /***/ in SQL", () => {
+    const raw = makeLargeFile([
+      "/***/",
+      "SELECT 1;",
+      "/* stripped */",
+    ]);
+
+    const { filtered } = filter.apply("read:/project/query.sql", raw);
+    expect(filtered).toContain("/***/");
+    expect(filtered).not.toContain("stripped");
+  });
+});
+
+// ── YAML block scalar handling ───────────────────────────────────
+
+describe("read-filter YAML block scalars", () => {
+  it("preserves # in YAML block scalar (|)", () => {
+    const raw = makeLargeFile([
+      "description: |",
+      "  This line has a # hash that is content",
+      "  Another line with # hash",
+      "name: test",
+    ]);
+
+    const { filtered } = filter.apply("read:/project/config.yaml", raw);
+    expect(filtered).toContain("This line has a # hash that is content");
+    expect(filtered).toContain("Another line with # hash");
+    expect(filtered).toContain("name: test");
+  });
+
+  it("preserves # in YAML block scalar (>)", () => {
+    const raw = makeLargeFile([
+      "description: >",
+      "  Folded content # with hash",
+      "  More content # here",
+      "key: value",
+    ]);
+
+    const { filtered } = filter.apply("read:/project/config.yml", raw);
+    expect(filtered).toContain("Folded content # with hash");
+    expect(filtered).toContain("More content # here");
+  });
+
+  it("block scalar ends when indent decreases", () => {
+    const raw = makeLargeFile([
+      "data: |",
+      "  block # content",
+      "other: value # this is a comment",
+    ]);
+
+    const { filtered } = filter.apply("read:/project/config.yaml", raw);
+    expect(filtered).toContain("block # content");
+    expect(filtered).toContain("other: value");
+    expect(filtered).not.toContain("this is a comment");
+  });
+
+  it("handles block scalar with modifiers (|2, >-, |+)", () => {
+    const raw = makeLargeFile([
+      "text: |2",
+      "    indented # content",
+      "fold: >-",
+      "  folded # text",
+      "next: value",
+    ]);
+
+    const { filtered } = filter.apply("read:/project/config.yaml", raw);
+    expect(filtered).toContain("indented # content");
+    expect(filtered).toContain("folded # text");
+  });
 });
