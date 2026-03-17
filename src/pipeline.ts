@@ -125,6 +125,9 @@ export function createToolResultHandler(
     // 3. Check shouldFilter (skip pipes, chaining, etc.)
     if (!shouldFilter(command)) return undefined;
 
+    // 3b. Check excludeCommands (skip filtering if command matches an exclude pattern)
+    if (isExcludedCommand(command, state.config.excludeCommands)) return undefined;
+
     // 4. Check minOutputChars threshold
     if (rawText.length < state.config.minOutputChars) return undefined;
 
@@ -199,6 +202,15 @@ export function createToolResultHandler(
       content: [{ type: "text", text: finalText }],
     };
   };
+}
+
+/**
+ * Check if a command matches any of the excludeCommands patterns.
+ * Patterns are matched as substrings against the full command string.
+ */
+function isExcludedCommand(command: string, excludePatterns: string[]): boolean {
+  if (excludePatterns.length === 0) return false;
+  return excludePatterns.some((pattern) => command.includes(pattern));
 }
 
 /**

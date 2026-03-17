@@ -265,8 +265,8 @@ describe("settings enter toggles value", () => {
     const deps = createDeps();
     const panel = new RtkSettingsPanel(deps);
 
-    // Navigate to maxFiles row (index 13)
-    for (let i = 0; i < 13; i++) {
+    // Navigate to maxFiles row (index 14)
+    for (let i = 0; i < 14; i++) {
       panel.handleInput(KEY_DOWN);
     }
 
@@ -280,8 +280,8 @@ describe("settings enter toggles value", () => {
     const deps = createDeps();
     const panel = new RtkSettingsPanel(deps);
 
-    // Navigate to maxFiles row (index 13)
-    for (let i = 0; i < 13; i++) {
+    // Navigate to maxFiles row (index 14)
+    for (let i = 0; i < 14; i++) {
       panel.handleInput(KEY_DOWN);
     }
 
@@ -301,8 +301,8 @@ describe("settings enter toggles value", () => {
     deps.config.tee.maxFiles = 1;
     const panel = new RtkSettingsPanel(deps);
 
-    // Navigate to maxFiles
-    for (let i = 0; i < 13; i++) {
+    // Navigate to maxFiles (index 14)
+    for (let i = 0; i < 14; i++) {
       panel.handleInput(KEY_DOWN);
     }
 
@@ -512,7 +512,7 @@ describe("defaults applied when no files", () => {
 describe("settings panel edge cases", () => {
   it("handles all filter toggles correctly", () => {
     const filterKeys: (keyof FilterGroupConfig)[] = [
-      "git", "ls", "test", "lint", "grep", "json", "docker", "npm", "read", "logDedup",
+      "git", "ls", "test", "lint", "grep", "json", "docker", "npm", "read", "logDedup", "http",
     ];
 
     // Test each filter individually to avoid navigation complexity
@@ -538,8 +538,8 @@ describe("settings panel edge cases", () => {
     const deps = createDeps();
     const panel = new RtkSettingsPanel(deps);
 
-    // Navigate to tee mode row (index 12: Scope + 10 filters + teeEnabled + teeMode)
-    for (let i = 0; i < 12; i++) {
+    // Navigate to tee mode row (index 13: Scope + 11 filters + teeEnabled + teeMode)
+    for (let i = 0; i < 13; i++) {
       panel.handleInput(KEY_DOWN);
     }
 

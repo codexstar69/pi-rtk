@@ -321,6 +321,27 @@ describe("test-js bun test all-pass", () => {
   });
 });
 
+describe("test-js bun test does not over-count suite summary lines", () => {
+  it("skips suite-level ✓ markers that contain (N tests)", () => {
+    // When bun output includes vitest-style suite summaries, they should not
+    // inflate the individual pass count.
+    const bunWithSuiteSummary = `
+bun test v1.3.10 (c12345abc)
+
+✓ test/config.test.ts (28 tests) 6ms
+✓ test/utils.test.ts (10 tests) 3ms
+
+28 pass
+0 fail
+Ran 28 tests across 2 files. [100.00ms]
+`;
+    const result = jsFilter.apply("bun test", bunWithSuiteSummary);
+    // The "28 pass" summary line should set passed=28, not 28+2 from suite lines
+    expect(result.filtered).toContain("28 tests passed");
+    expect(result.filtered).not.toContain("30 tests passed");
+  });
+});
+
 describe("test-js bun test with failures", () => {
   it("shows failure summary", () => {
     const result = jsFilter.apply("bun test", BUN_FAILURES);

@@ -41,11 +41,11 @@ function seedUnfiltered(command: string, count: number, avgChars: number = 5000)
 describe("discover identifies unfiltered commands", () => {
   it("identifies commands that could have been filtered", () => {
     seedUnfiltered("cargo build", 4, 12000);
-    seedUnfiltered("docker compose up", 2, 8000);
+    seedUnfiltered("docker ps", 2, 8000);
 
     const output = formatDiscoverOutput(db);
     expect(output).toContain("cargo build");
-    expect(output).toContain("docker compose up");
+    expect(output).toContain("docker ps");
   });
 
   it("groups similar commands together", () => {
@@ -66,7 +66,7 @@ describe("discover identifies unfiltered commands", () => {
   });
 
   it("shows run count per command pattern", () => {
-    seedUnfiltered("docker compose up", 3, 8000);
+    seedUnfiltered("docker ps", 3, 8000);
 
     const output = formatDiscoverOutput(db);
     expect(output).toMatch(/3/);

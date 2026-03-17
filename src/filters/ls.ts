@@ -222,6 +222,20 @@ function parseFindOutput(raw: string): GroupedFiles {
 
 // ── tree parser ───────────────────────────────────────────────────
 
+/** Known extensionless filenames that are files, not directories. */
+const KNOWN_FILES = new Set([
+  "Makefile", "Dockerfile", "Containerfile", "Vagrantfile", "Procfile",
+  "Rakefile", "Gemfile", "Brewfile", "Justfile", "Taskfile",
+  "LICENSE", "LICENCE", "COPYING", "CHANGELOG", "CHANGES", "AUTHORS",
+  "CONTRIBUTORS", "CODEOWNERS", "OWNERS",
+  "README", "INSTALL", "TODO", "HACKING", "NEWS",
+  ".gitignore", ".gitattributes", ".gitmodules", ".gitkeep",
+  ".dockerignore", ".editorconfig", ".eslintignore", ".prettierignore",
+  ".npmignore", ".npmrc", ".nvmrc", ".node-version",
+  ".env", ".env.local", ".env.example",
+  ".babelrc", ".browserslistrc", ".stylelintrc",
+]);
+
 function parseTreeOutput(raw: string): GroupedFiles {
   const groups = new Map<string, string[]>();
   let totalFiles = 0;
@@ -231,7 +245,12 @@ function parseTreeOutput(raw: string): GroupedFiles {
   const lines = raw.split("\n");
   const dirStack: string[] = [];
 
-  for (const line of lines) {
+  // First pass: parse all entries with their depths for lookahead
+  interface TreeEntry { name: string; depth: number; lineIdx: number }
+  const entries: TreeEntry[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     // Skip the summary line (e.g., "3 directories, 12 files")
     if (/^\d+\s+director/.test(line)) continue;
     // Skip the root "." line
@@ -249,21 +268,50 @@ function parseTreeOutput(raw: string): GroupedFiles {
     // Count depth by looking at "├", "└", or "│" markers
     const depth = Math.floor(prefix.replace(/\s/g, "").length);
 
-    // Extract the actual name
+    // Extract the actual name (strip trailing / if present from tree -F)
     const nameMatch = line.match(/[├└──]+\s*(.+)$/);
-    const name = nameMatch ? nameMatch[1].trim() : stripped;
+    let name = nameMatch ? nameMatch[1].trim() : stripped;
 
     if (!name) continue;
 
-    // Determine if this is a directory (ends with / in some tree modes,
-    // or has children in the tree). We use the heuristic that entries
-    // without an extension and not at the leaf are directories.
-    // For simplicity, we just collect all entries and group by their parent.
+    // Trailing "/" explicitly marks a directory (tree -F mode)
+    if (name.endsWith("/")) {
+      name = name.slice(0, -1);
+      entries.push({ name: name + "/", depth, lineIdx: i });
+    } else {
+      entries.push({ name, depth, lineIdx: i });
+    }
+  }
+
+  // Second pass: determine directories by checking if next entry is deeper (has children)
+  for (let ei = 0; ei < entries.length; ei++) {
+    let { name, depth } = entries[ei];
+
+    // Trailing "/" from tree -F means directory
+    let isDir = false;
+    if (name.endsWith("/")) {
+      name = name.slice(0, -1);
+      isDir = true;
+    }
+
+    // If next entry has a deeper depth, this entry is a directory (it has children)
+    if (!isDir && ei + 1 < entries.length) {
+      const nextDepth = entries[ei + 1].depth;
+      if (nextDepth > depth) {
+        isDir = true;
+      }
+    }
+
+    // If not identified as dir yet and has no extension, check known file list
+    if (!isDir && !getExt(name) && !KNOWN_FILES.has(name)) {
+      // Extensionless and not a known file — could be a dir, but we can't be sure.
+      // Default to treating as a file to avoid misclassifying.
+      isDir = false;
+    }
 
     // Adjust directory stack
     while (dirStack.length > depth) dirStack.pop();
 
-    const isDir = !name.includes(".");
     if (isDir) {
       dirStack[depth] = name;
       continue;

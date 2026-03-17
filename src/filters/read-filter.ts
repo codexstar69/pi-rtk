@@ -198,13 +198,33 @@ function stripCStyle(text: string): string {
  * Strip hash (#) comments while preserving:
  * - Shebangs (#!) on the first line
  * - Strings containing #
+ * - YAML block scalar content (lines after | or >)
  */
 function stripHash(text: string): string {
   const lines = text.split("\n");
   const result: string[] = [];
+  let blockScalarIndent = -1; // -1 = not in block scalar
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+
+    // If inside a YAML block scalar, preserve lines that are indented
+    // deeper than the block scalar indicator or are empty
+    if (blockScalarIndent >= 0) {
+      if (line.trim() === "") {
+        // Empty lines are part of the block scalar
+        result.push(line);
+        continue;
+      }
+      const indent = line.length - line.trimStart().length;
+      if (indent > blockScalarIndent) {
+        // Still inside block scalar — preserve literally (# is content)
+        result.push(line);
+        continue;
+      }
+      // Line at same or lesser indent — block scalar ended
+      blockScalarIndent = -1;
+    }
 
     // Preserve shebangs on first line
     if (i === 0 && line.startsWith("#!")) {
@@ -249,7 +269,14 @@ function stripHash(text: string): string {
       j++;
     }
 
-    result.push(processed.trimEnd());
+    const trimmedProcessed = processed.trimEnd();
+    result.push(trimmedProcessed);
+
+    // Detect YAML block scalar indicators: value ends with | or >
+    // (possibly with modifiers like |2, >-, |+, etc.)
+    if (/[|>][-+\d]*$/.test(trimmedProcessed)) {
+      blockScalarIndent = line.length - line.trimStart().length;
+    }
   }
 
   return result.join("\n");
@@ -400,9 +427,9 @@ function stripCss(text: string): string {
 
       // Block comment: /* or /**
       if (ch === "/" && line[j + 1] === "*") {
-        if (line[j + 2] === "*" && line[j + 3] !== "/") {
-          // Doc comment — preserve
-          const endIdx = line.indexOf("*/", j + 3);
+        if (line[j + 2] === "*") {
+          // Doc comment — preserve (including /***/)
+          const endIdx = line.indexOf("*/", j + 2);
           if (endIdx !== -1) {
             processed += line.slice(j, endIdx + 2);
             j = endIdx + 2;
@@ -560,9 +587,9 @@ function stripSql(text: string): string {
 
       // Block comment: /* or /**
       if (ch === "/" && line[j + 1] === "*") {
-        if (line[j + 2] === "*" && line[j + 3] !== "/") {
-          // Doc comment — preserve
-          const endIdx = line.indexOf("*/", j + 3);
+        if (line[j + 2] === "*") {
+          // Doc comment — preserve (including /***/)
+          const endIdx = line.indexOf("*/", j + 2);
           if (endIdx !== -1) {
             processed += line.slice(j, endIdx + 2);
             j = endIdx + 2;

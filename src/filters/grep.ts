@@ -78,8 +78,10 @@ function parseMatches(raw: string): GrepMatch[] {
     }
 
     // Try file:text (grep -r without line numbers)
+    // Guard: the "file" part must look like a path (contains / or .)
+    // to avoid false positives like "Error: something" or "Warning: text"
     const noLineNum = trimmed.match(/^(.+?):(.+)$/);
-    if (noLineNum && !noLineNum[1].match(/^\d+$/)) {
+    if (noLineNum && !noLineNum[1].match(/^\d+$/) && /[/.]/.test(noLineNum[1])) {
       matches.push({ file: noLineNum[1], line: "", text: noLineNum[2].trim() });
       continue;
     }

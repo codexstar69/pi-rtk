@@ -506,4 +506,21 @@ describe("getFilterGroup", () => {
     expect(getFilterGroup("log-dedup")).toBe("logDedup");
     expect(getFilterGroup("http")).toBe("http");
   });
+
+  it("unknown filter names are not aliased to git", () => {
+    // Unknown filters should return their own name, not "git"
+    const result = getFilterGroup("some-unknown-filter");
+    expect(result).not.toBe("git");
+    expect(result).toBe("some-unknown-filter");
+  });
+
+  it("disabling git does not affect unknown filters", () => {
+    const config: RtkConfig = {
+      ...DEFAULTS,
+      filters: { ...DEFAULTS.filters, git: false },
+    };
+    // Unknown filter group maps to its own name, which won't be === false
+    const group = getFilterGroup("some-unknown-filter");
+    expect(config.filters[group]).toBeUndefined(); // not false, so filter stays enabled
+  });
 });

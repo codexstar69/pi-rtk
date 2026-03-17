@@ -332,7 +332,7 @@ describe("json-schema filter", () => {
 
       // At depth 3 (c), the value is an object with 1 key (< 3) → expanded
       // But d's value is collapsed via collapseLeaf
-      expect(parsed.a.b.c.d).toBe("{ 1 keys }");
+      expect(parsed.a.b.c.d).toBe("{ 1 key }");
     });
   });
 

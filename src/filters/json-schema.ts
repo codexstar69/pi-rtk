@@ -45,12 +45,12 @@ function collapseLeaf(value: unknown): unknown {
   if (typeof value === "boolean") return "boolean";
   if (Array.isArray(value)) {
     if (value.length === 0) return [];
-    return `[ ${value.length} items ]`;
+    return `[ ${value.length} ${value.length === 1 ? "item" : "items"} ]`;
   }
   if (typeof value === "object") {
     const keys = Object.keys(value as Record<string, unknown>);
     if (keys.length === 0) return {};
-    return `{ ${keys.length} keys }`;
+    return `{ ${keys.length} ${keys.length === 1 ? "key" : "keys"} }`;
   }
   return "unknown";
 }
@@ -74,7 +74,7 @@ function extractSchema(value: unknown, depth: number): unknown {
     if (value.length === 0) return [];
     // Collapse large arrays regardless of depth
     if (value.length >= ARRAY_COLLAPSE_THRESHOLD) {
-      return `[ ${value.length} items ]`;
+      return `[ ${value.length} ${value.length === 1 ? "item" : "items"} ]`;
     }
     // At or beyond depth limit: small arrays still expand but with leaf values
     if (depth >= MAX_DEPTH) {
@@ -92,7 +92,7 @@ function extractSchema(value: unknown, depth: number): unknown {
     if (depth >= MAX_DEPTH) {
       if (keys.length === 0) return {};
       if (keys.length >= OBJECT_COLLAPSE_THRESHOLD) {
-        return `{ ${keys.length} keys }`;
+        return `{ ${keys.length} ${keys.length === 1 ? "key" : "keys"} }`;
       }
       // Small objects at depth limit: expand but only with leaf values
       // (no further nesting allowed)
