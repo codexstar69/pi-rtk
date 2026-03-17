@@ -1,0 +1,38 @@
+{
+  "milestone": "data-filters",
+  "round": 1,
+  "status": "pass",
+  "assertionsSummary": {
+    "total": 21,
+    "passed": 21,
+    "failed": 0,
+    "blocked": 0
+  },
+  "passedAssertions": [
+    "VAL-DATA-001",
+    "VAL-DATA-002",
+    "VAL-DATA-003",
+    "VAL-DATA-004",
+    "VAL-DATA-005",
+    "VAL-DATA-006",
+    "VAL-DATA-007",
+    "VAL-DATA-008",
+    "VAL-DATA-009",
+    "VAL-DATA-010",
+    "VAL-DATA-011",
+    "VAL-DATA-012",
+    "VAL-DATA-013",
+    "VAL-DATA-014",
+    "VAL-DATA-015",
+    "VAL-DATA-016",
+    "VAL-DATA-017",
+    "VAL-DATA-018",
+    "VAL-CROSS-003",
+    "VAL-CROSS-004",
+    "VAL-CROSS-005"
+  ],
+  "failedAssertions": [],
+  "blockedAssertions": [],
+  "appliedUpdates": [],
+  "previousRound": null
+}

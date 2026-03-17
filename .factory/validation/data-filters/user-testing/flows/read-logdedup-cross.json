@@ -1,0 +1,253 @@
+{
+  "groupId": "read-logdedup-cross",
+  "testedAt": "2026-03-17T12:46:38.000Z",
+  "isolation": {
+    "workingDirectory": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testCommands": [
+      "bun run test -- read-filter",
+      "bun run test -- log-dedup",
+      "bun run test -- integration"
+    ],
+    "surface": "vitest unit tests"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": [
+    {
+      "id": "VAL-DATA-008",
+      "title": "Read filter strips comments from .ts",
+      "status": "pass",
+      "steps": [
+        { "action": "Run read-filter tests", "expected": "Test 'ts comments stripped' passes", "observed": "✓ read-filter TypeScript/JavaScript > ts comments stripped (1ms)" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/read-filter-output.txt",
+        "testNames": [
+          "read-filter TypeScript/JavaScript > ts comments stripped"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-009",
+      "title": "Read filter strips comments from .py",
+      "status": "pass",
+      "steps": [
+        { "action": "Run read-filter tests", "expected": "Test 'py comments stripped' passes", "observed": "✓ read-filter Python > py comments stripped (0ms)" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/read-filter-output.txt",
+        "testNames": [
+          "read-filter Python > py comments stripped"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-010",
+      "title": "Read filter preserves doc comments",
+      "status": "pass",
+      "steps": [
+        { "action": "Run read-filter tests", "expected": "Tests for JSDoc, ///, and docstrings preserved pass", "observed": "All doc comment preservation tests pass" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/read-filter-output.txt",
+        "testNames": [
+          "read-filter TypeScript/JavaScript > preserves JSDoc /** */ comments",
+          "read-filter TypeScript/JavaScript > preserves /// triple-slash doc comments in TS",
+          "read-filter Python > preserves triple-quote docstrings",
+          "read-filter Python > preserves single-quote triple-quote docstrings",
+          "read-filter Rust > preserves /// doc comments",
+          "read-filter Rust > preserves /** */ doc comments",
+          "read-filter Go > preserves // doc comments (Go convention: comment before exported)"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-011",
+      "title": "Read filter skips small files",
+      "status": "pass",
+      "steps": [
+        { "action": "Run read-filter tests", "expected": "Test 'small files unchanged' passes", "observed": "✓ read-filter small files > small files unchanged (0ms)" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/read-filter-output.txt",
+        "testNames": [
+          "read-filter small files > small files unchanged",
+          "read-filter small files > file exactly 5000 chars passes through unchanged"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-012",
+      "title": "Read filter handles all languages",
+      "status": "pass",
+      "steps": [
+        { "action": "Run read-filter tests", "expected": "All 20 language-specific strip tests pass", "observed": "All 20 tests in 'read-filter all languages' describe block pass" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/read-filter-output.txt",
+        "testNames": [
+          "read-filter all languages > strips comments from .ts",
+          "read-filter all languages > strips comments from .js",
+          "read-filter all languages > strips comments from .tsx",
+          "read-filter all languages > strips comments from .jsx",
+          "read-filter all languages > strips comments from .py",
+          "read-filter all languages > strips comments from .rs",
+          "read-filter all languages > strips comments from .go",
+          "read-filter all languages > strips comments from .rb",
+          "read-filter all languages > strips comments from .sh",
+          "read-filter all languages > strips comments from .bash",
+          "read-filter all languages > strips comments from .zsh",
+          "read-filter all languages > strips comments from .yaml",
+          "read-filter all languages > strips comments from .yml",
+          "read-filter all languages > strips comments from .toml",
+          "read-filter all languages > strips comments from .css",
+          "read-filter all languages > strips comments from .scss",
+          "read-filter all languages > strips comments from .html",
+          "read-filter all languages > strips comments from .vue",
+          "read-filter all languages > strips comments from .svelte",
+          "read-filter all languages > strips comments from .sql"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-013",
+      "title": "Read filter normalizes blank lines",
+      "status": "pass",
+      "steps": [
+        { "action": "Run read-filter tests", "expected": "Test 'blank lines normalized' passes", "observed": "✓ read-filter blank line normalization > blank lines normalized (0ms)" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/read-filter-output.txt",
+        "testNames": [
+          "read-filter blank line normalization > blank lines normalized"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-014",
+      "title": "Log dedup collapses 3+ identical lines",
+      "status": "pass",
+      "steps": [
+        { "action": "Run log-dedup tests", "expected": "Tests for collapsing 3+ identical lines pass", "observed": "All 4 tests in 'collapses 3+ identical lines' describe block pass" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/log-dedup-output.txt",
+        "testNames": [
+          "log-dedup filter — collapses 3+ identical lines > collapses 3 consecutive identical lines",
+          "log-dedup filter — collapses 3+ identical lines > collapses large runs (50 identical lines)",
+          "log-dedup filter — collapses 3+ identical lines > collapses multiple separate runs",
+          "log-dedup filter — collapses 3+ identical lines > achieves savings on highly repetitive output"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-015",
+      "title": "Log dedup preserves runs < 3",
+      "status": "pass",
+      "steps": [
+        { "action": "Run log-dedup tests", "expected": "Tests for preserving short runs pass", "observed": "All 3 tests in 'preserves runs < 3' describe block pass" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/log-dedup-output.txt",
+        "testNames": [
+          "log-dedup filter — preserves runs < 3 > preserves 2 consecutive identical lines",
+          "log-dedup filter — preserves runs < 3 > preserves single unique lines",
+          "log-dedup filter — preserves runs < 3 > preserves exactly 1 repeated line (no collapse)"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-016",
+      "title": "Log dedup pattern-based timestamp dedup",
+      "status": "pass",
+      "steps": [
+        { "action": "Run log-dedup tests", "expected": "Tests for timestamp-based dedup pass", "observed": "All 5 tests in 'pattern-based timestamp dedup' describe block pass" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/log-dedup-output.txt",
+        "testNames": [
+          "log-dedup filter — pattern-based timestamp dedup > collapses lines with same message but different ISO timestamps",
+          "log-dedup filter — pattern-based timestamp dedup > collapses lines with same message but different syslog timestamps",
+          "log-dedup filter — pattern-based timestamp dedup > collapses lines with same message but different bracketed timestamps",
+          "log-dedup filter — pattern-based timestamp dedup > does not collapse timestamp lines with different messages",
+          "log-dedup filter — pattern-based timestamp dedup > preserves 2 timestamp-different same-message lines"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-017",
+      "title": "Log dedup summary line",
+      "status": "pass",
+      "steps": [
+        { "action": "Run log-dedup tests", "expected": "Tests for summary line with counts pass", "observed": "All 4 tests in 'summary line' describe block pass" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/log-dedup-output.txt",
+        "testNames": [
+          "log-dedup filter — summary line > appends summary with unique, total, and collapsed counts",
+          "log-dedup filter — summary line > summary with no duplicates shows 0 collapsed",
+          "log-dedup filter — summary line > summary with all identical lines",
+          "log-dedup filter — summary line > summary counts correctly with mixed runs"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-003",
+      "title": "Read pipeline for JSON",
+      "status": "pass",
+      "steps": [
+        { "action": "Run integration tests", "expected": "Test 'read pipeline extracts JSON schema' passes", "observed": "✓ integration: tool_result pipeline > read pipeline extracts JSON schema (0ms)" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/integration-output.txt",
+        "testNames": [
+          "integration: tool_result pipeline > read pipeline extracts JSON schema"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-004",
+      "title": "Read pipeline for source files",
+      "status": "pass",
+      "steps": [
+        { "action": "Run integration tests", "expected": "Test 'read pipeline strips comments from large source' passes", "observed": "✓ integration: tool_result pipeline > read pipeline strips comments from large source (0ms)" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/integration-output.txt",
+        "testNames": [
+          "integration: tool_result pipeline > read pipeline strips comments from large source"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-005",
+      "title": "Read pipeline skips small files",
+      "status": "pass",
+      "steps": [
+        { "action": "Run integration tests", "expected": "Test 'read pipeline skips small files' passes", "observed": "✓ integration: tool_result pipeline > read pipeline skips small files (0ms)" }
+      ],
+      "evidence": {
+        "testOutput": "data-filters/read-logdedup-cross/integration-output.txt",
+        "testNames": [
+          "integration: tool_result pipeline > read pipeline skips small files"
+        ]
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 13 assertions: 13 passed, 0 failed. Read-filter tests (56/56 pass) cover VAL-DATA-008 through VAL-DATA-013. Log-dedup tests (31/31 pass) cover VAL-DATA-014 through VAL-DATA-017. Integration tests (25/25 pass) cover VAL-CROSS-003 through VAL-CROSS-005.",
+  "allTestsPassed": true
+}

@@ -1,0 +1,59 @@
+{
+  "groupId": "docker-npm-http",
+  "testedAt": "2026-03-17T12:46:09Z",
+  "isolation": {
+    "workingDirectory": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testRunner": "vitest via bun run test",
+    "noServersNeeded": true
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": {
+    "VAL-DATA-005": {
+      "status": "pass",
+      "evidence": "Test 'compacts docker ps table with short IDs (VAL-DATA-005)' passed in docker.test.ts. Also supported by 'compacts docker images table with short IDs' and 'preserves rows that have no long hex IDs'. All 21 docker tests passed.",
+      "testNames": [
+        "docker-list filter > compacts docker ps table with short IDs (VAL-DATA-005)",
+        "docker-list filter > compacts docker images table with short IDs",
+        "docker-list filter > preserves rows that have no long hex IDs"
+      ]
+    },
+    "VAL-DATA-006": {
+      "status": "pass",
+      "evidence": "Test 'collapses 3+ consecutive identical lines with (xN) (VAL-DATA-006)' passed in docker.test.ts. Also supported by 'preserves runs of fewer than 3 identical lines', 'collapses lines with different timestamps but same message', and 'handles multiple different repeated groups'. All 21 docker tests passed.",
+      "testNames": [
+        "docker-logs filter > collapses 3+ consecutive identical lines with (xN) (VAL-DATA-006)",
+        "docker-logs filter > preserves runs of fewer than 3 identical lines",
+        "docker-logs filter > collapses lines with different timestamps but same message",
+        "docker-logs filter > handles multiple different repeated groups"
+      ]
+    },
+    "VAL-DATA-007": {
+      "status": "pass",
+      "evidence": "Tests 'summarizes bun install output (VAL-DATA-007)', 'summarizes npm install output', 'summarizes pnpm install output', and 'summarizes pip install output (VAL-DATA-007)' all passed. Vulnerability preservation confirmed by 'preserves vulnerability warnings (VAL-DATA-007)' and 'preserves pip vulnerability warnings'. All 22 npm-install tests passed.",
+      "testNames": [
+        "npm-install filter > summarizes bun install output (VAL-DATA-007)",
+        "npm-install filter > summarizes npm install output",
+        "npm-install filter > summarizes pnpm install output",
+        "pip-install filter > summarizes pip install output (VAL-DATA-007)",
+        "npm-install filter > preserves vulnerability warnings (VAL-DATA-007)",
+        "pip-install filter > preserves pip vulnerability warnings"
+      ]
+    },
+    "VAL-DATA-018": {
+      "status": "pass",
+      "evidence": "Test 'extracts status code from curl -i output (VAL-DATA-018)' passed in http.test.ts. Also supported by 'extracts status code from curl -v output', 'extracts status code from HTTP/2 response', 'extracts status from wget output', 'shows content type and size in status line', and 'handles xh JSON output'. All 18 http tests passed.",
+      "testNames": [
+        "http filter > extracts status code from curl -i output (VAL-DATA-018)",
+        "http filter > extracts status code from curl -v output",
+        "http filter > extracts status code from HTTP/2 response",
+        "http filter > extracts status from wget output",
+        "http filter > shows content type and size in status line",
+        "http filter > handles xh JSON output"
+      ]
+    }
+  },
+  "allTestsPassed": true,
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 4 assertions (VAL-DATA-005, VAL-DATA-006, VAL-DATA-007, VAL-DATA-018): all 4 passed. Docker tests (21/21), npm-install tests (22/22), and http tests (18/18) all passed with 0 failures."
+}

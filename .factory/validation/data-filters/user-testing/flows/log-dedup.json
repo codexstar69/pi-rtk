@@ -1,0 +1,95 @@
+{
+  "groupId": "log-dedup",
+  "testedAt": "2026-03-17T12:40:23Z",
+  "isolation": {
+    "workingDirectory": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testCommand": "bun run test -- log-dedup",
+    "typecheckCommand": "bunx tsc --noEmit"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": [
+    {
+      "id": "VAL-DATA-014",
+      "title": "Log dedup collapses 3+ identical lines",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- log-dedup --reporter=verbose", "expected": "Tests in 'collapses 3+ identical lines' describe block pass", "observed": "All 4 tests passed: 'collapses 3 consecutive identical lines', 'collapses large runs (50 identical lines)', 'collapses multiple separate runs', 'achieves savings on highly repetitive output'" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "data-filters/log-dedup/test-output.txt",
+        "tests": [
+          "log-dedup filter — collapses 3+ identical lines > collapses 3 consecutive identical lines",
+          "log-dedup filter — collapses 3+ identical lines > collapses large runs (50 identical lines)",
+          "log-dedup filter — collapses 3+ identical lines > collapses multiple separate runs",
+          "log-dedup filter — collapses 3+ identical lines > achieves savings on highly repetitive output"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-015",
+      "title": "Log dedup preserves runs < 3",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- log-dedup --reporter=verbose", "expected": "Tests in 'preserves runs < 3' describe block pass", "observed": "All 3 tests passed: 'preserves 2 consecutive identical lines', 'preserves single unique lines', 'preserves exactly 1 repeated line (no collapse)'" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "data-filters/log-dedup/test-output.txt",
+        "tests": [
+          "log-dedup filter — preserves runs < 3 > preserves 2 consecutive identical lines",
+          "log-dedup filter — preserves runs < 3 > preserves single unique lines",
+          "log-dedup filter — preserves runs < 3 > preserves exactly 1 repeated line (no collapse)"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-016",
+      "title": "Log dedup pattern-based timestamp dedup",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- log-dedup --reporter=verbose", "expected": "Tests in 'pattern-based timestamp dedup' describe block pass", "observed": "All 5 tests passed: 'collapses lines with same message but different ISO timestamps', 'collapses lines with same message but different syslog timestamps', 'collapses lines with same message but different bracketed timestamps', 'does not collapse timestamp lines with different messages', 'preserves 2 timestamp-different same-message lines'" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "data-filters/log-dedup/test-output.txt",
+        "tests": [
+          "log-dedup filter — pattern-based timestamp dedup > collapses lines with same message but different ISO timestamps",
+          "log-dedup filter — pattern-based timestamp dedup > collapses lines with same message but different syslog timestamps",
+          "log-dedup filter — pattern-based timestamp dedup > collapses lines with same message but different bracketed timestamps",
+          "log-dedup filter — pattern-based timestamp dedup > does not collapse timestamp lines with different messages",
+          "log-dedup filter — pattern-based timestamp dedup > preserves 2 timestamp-different same-message lines"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-017",
+      "title": "Log dedup summary line",
+      "status": "pass",
+      "steps": [
+        { "action": "Run bun run test -- log-dedup --reporter=verbose", "expected": "Tests in 'summary line' describe block pass", "observed": "All 4 tests passed: 'appends summary with unique, total, and collapsed counts', 'summary with no duplicates shows 0 collapsed', 'summary with all identical lines', 'summary counts correctly with mixed runs'" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "none",
+        "testOutput": "data-filters/log-dedup/test-output.txt",
+        "tests": [
+          "log-dedup filter — summary line > appends summary with unique, total, and collapsed counts",
+          "log-dedup filter — summary line > summary with no duplicates shows 0 collapsed",
+          "log-dedup filter — summary line > summary with all identical lines",
+          "log-dedup filter — summary line > summary counts correctly with mixed runs"
+        ]
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 4 assertions: all 4 passed. All 31 log-dedup tests pass (4ms). TypeScript typecheck clean (0 errors). VAL-DATA-014 verified by 4 collapse tests, VAL-DATA-015 by 3 preservation tests, VAL-DATA-016 by 5 timestamp dedup tests, VAL-DATA-017 by 4 summary line tests."
+}

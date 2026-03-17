@@ -1,0 +1,118 @@
+{
+  "groupId": "read-filter",
+  "testedAt": "2026-03-17T12:40:36Z",
+  "isolation": {
+    "workingDirectory": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "surface": "vitest unit tests",
+    "appUrl": null
+  },
+  "toolsUsed": ["vitest", "tsc"],
+  "assertions": {
+    "VAL-DATA-008": {
+      "status": "pass",
+      "evidence": "Test 'read-filter TypeScript/JavaScript > ts comments stripped' passes: single-line //, inline //, and multi-line /* */ comments are stripped from TypeScript files >5000 chars. Code is preserved, filteredChars < rawChars confirmed.",
+      "tests": [
+        "read-filter TypeScript/JavaScript > ts comments stripped",
+        "read-filter TypeScript/JavaScript > strips .js comments",
+        "read-filter TypeScript/JavaScript > strips .tsx and .jsx comments"
+      ]
+    },
+    "VAL-DATA-009": {
+      "status": "pass",
+      "evidence": "Test 'read-filter Python > py comments stripped' passes: # full-line and # inline comments stripped from Python files >5000 chars. Code preserved, filteredChars < rawChars confirmed.",
+      "tests": [
+        "read-filter Python > py comments stripped"
+      ]
+    },
+    "VAL-DATA-010": {
+      "status": "pass",
+      "evidence": "Tests confirm /** */ JSDoc comments, /// triple-slash doc comments, and Python triple-quote docstrings (both double and single quote) are preserved while regular comments are stripped.",
+      "tests": [
+        "read-filter TypeScript/JavaScript > preserves JSDoc /** */ comments",
+        "read-filter TypeScript/JavaScript > preserves /// triple-slash doc comments in TS",
+        "read-filter Python > preserves triple-quote docstrings",
+        "read-filter Python > preserves single-quote triple-quote docstrings",
+        "read-filter Rust > preserves /// doc comments",
+        "read-filter Rust > preserves /** */ doc comments",
+        "read-filter Go > preserves // doc comments (Go convention: comment before exported)"
+      ]
+    },
+    "VAL-DATA-011": {
+      "status": "pass",
+      "evidence": "Test 'read-filter small files > small files unchanged' passes: files <=5000 chars return filtered === raw (unchanged). Boundary test at exactly 5000 chars also passes through unchanged.",
+      "tests": [
+        "read-filter small files > small files unchanged",
+        "read-filter small files > file exactly 5000 chars passes through unchanged"
+      ]
+    },
+    "VAL-DATA-012": {
+      "status": "pass",
+      "evidence": "All 20 language extensions tested in 'read-filter all languages' describe block: .ts, .js, .tsx, .jsx, .py, .rs, .go, .rb, .sh, .bash, .zsh, .yaml, .yml, .toml, .css, .scss, .html, .vue, .svelte, .sql — each confirms comment text stripped while code preserved. Additional per-language describe blocks (Rust, Go, Ruby, Shell, YAML, TOML, CSS/SCSS, HTML/Vue/Svelte, SQL) all pass.",
+      "tests": [
+        "read-filter all languages > strips comments from .ts",
+        "read-filter all languages > strips comments from .js",
+        "read-filter all languages > strips comments from .tsx",
+        "read-filter all languages > strips comments from .jsx",
+        "read-filter all languages > strips comments from .py",
+        "read-filter all languages > strips comments from .rs",
+        "read-filter all languages > strips comments from .go",
+        "read-filter all languages > strips comments from .rb",
+        "read-filter all languages > strips comments from .sh",
+        "read-filter all languages > strips comments from .bash",
+        "read-filter all languages > strips comments from .zsh",
+        "read-filter all languages > strips comments from .yaml",
+        "read-filter all languages > strips comments from .yml",
+        "read-filter all languages > strips comments from .toml",
+        "read-filter all languages > strips comments from .css",
+        "read-filter all languages > strips comments from .scss",
+        "read-filter all languages > strips comments from .html",
+        "read-filter all languages > strips comments from .vue",
+        "read-filter all languages > strips comments from .svelte",
+        "read-filter all languages > strips comments from .sql",
+        "read-filter Rust > strips // and /* */ comments",
+        "read-filter Go > strips // and /* */ comments",
+        "read-filter Ruby > strips # comments",
+        "read-filter Shell > strips # comments from .sh",
+        "read-filter Shell > strips # comments from .bash and .zsh",
+        "read-filter YAML > strips # comments from .yaml and .yml",
+        "read-filter TOML > strips # comments from .toml",
+        "read-filter CSS/SCSS > strips /* */ comments from .css",
+        "read-filter CSS/SCSS > strips /* */ and // comments from .scss",
+        "read-filter HTML/Vue/Svelte > strips <!-- --> comments from .html",
+        "read-filter HTML/Vue/Svelte > strips comments from .vue and .svelte",
+        "read-filter SQL > strips -- and /* */ comments from .sql"
+      ]
+    },
+    "VAL-DATA-013": {
+      "status": "pass",
+      "evidence": "Test 'read-filter blank line normalization > blank lines normalized' passes: multiple consecutive blank lines (3-5 in a row) collapsed to single blank line. Output does not match /\\n\\n\\n/ regex.",
+      "tests": [
+        "read-filter blank line normalization > blank lines normalized"
+      ]
+    },
+    "VAL-CROSS-003": {
+      "status": "pass",
+      "evidence": "Integration test 'read pipeline extracts JSON schema' passes: read tool_call for .json file → tool_result with JSON content > minOutputChars → filter applied → savings tracked (totalRuns=1).",
+      "tests": [
+        "integration: tool_result pipeline > read pipeline extracts JSON schema"
+      ]
+    },
+    "VAL-CROSS-004": {
+      "status": "pass",
+      "evidence": "Integration test 'read pipeline strips comments from large source' passes: read tool_call for .ts file → tool_result with >5000 char source → filter applied → savings tracked (totalRuns=1).",
+      "tests": [
+        "integration: tool_result pipeline > read pipeline strips comments from large source"
+      ]
+    },
+    "VAL-CROSS-005": {
+      "status": "pass",
+      "evidence": "Integration test 'read pipeline skips small files' passes: read tool_call for .ts file → tool_result with <5000 char source → real read-filter matches but returns raw unchanged → content still contains original comments.",
+      "tests": [
+        "integration: tool_result pipeline > read pipeline skips small files"
+      ]
+    }
+  },
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 9 assertions: 9 passed, 0 failed, 0 blocked. Read-filter tests (56/56 pass) and integration tests (25/25 pass) all green. Typecheck clean (0 errors)."
+}

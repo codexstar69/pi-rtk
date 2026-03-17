@@ -1,0 +1,84 @@
+{
+  "groupId": "json-schema",
+  "testedAt": "2026-03-17T12:45:44.000Z",
+  "isolation": {
+    "workingDirectory": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testCommand": "bun run test -- json-schema"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": [
+    {
+      "id": "VAL-DATA-001",
+      "title": "JSON schema type replacement",
+      "status": "pass",
+      "evidence": "5 tests in 'primitive type replacement (VAL-DATA-001)' describe block all pass. Tests verify: string→'string', number→'number', boolean→'boolean', null→'null', and mixed primitive types.",
+      "testNames": [
+        "replaces string values with 'string'",
+        "replaces number values with 'number'",
+        "replaces boolean values with 'boolean'",
+        "replaces null with 'null'",
+        "handles mixed primitive types"
+      ],
+      "steps": [
+        { "action": "Run vitest with json-schema filter", "expected": "All primitive type replacement tests pass", "observed": "All 5 tests pass" }
+      ],
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-002",
+      "title": "JSON schema array collapse",
+      "status": "pass",
+      "evidence": "7 tests in 'array collapse/expand (VAL-DATA-002)' describe block all pass. Tests verify: 3+ items collapsed to '[ N items ]', <3 items expanded inline, empty arrays preserved, single-element arrays expanded, arrays of objects collapsed, exactly 3 items triggers collapse.",
+      "testNames": [
+        "collapses arrays with 3+ items",
+        "expands small arrays inline (< 3 items)",
+        "expands single-element arrays inline",
+        "handles empty arrays",
+        "collapses arrays of objects",
+        "expands 2-element arrays with nested objects",
+        "handles exactly 3 items → collapsed"
+      ],
+      "steps": [
+        { "action": "Run vitest with json-schema filter", "expected": "All array collapse/expand tests pass", "observed": "All 7 tests pass" }
+      ],
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-003",
+      "title": "JSON schema object collapse",
+      "status": "pass",
+      "evidence": "4 tests in 'object collapse/expand (VAL-DATA-003)' describe block all pass. Tests verify: objects with 3+ keys collapsed at depth limit to '{ N keys }', objects with <3 keys expanded, key names preserved exactly.",
+      "testNames": [
+        "collapses objects with 3+ keys at depth limit",
+        "expands objects with < 3 keys at depth limit",
+        "collapses top-level large objects' nested deep objects",
+        "preserves key names exactly"
+      ],
+      "steps": [
+        { "action": "Run vitest with json-schema filter", "expected": "All object collapse/expand tests pass", "observed": "All 4 tests pass" }
+      ],
+      "issues": null
+    },
+    {
+      "id": "VAL-DATA-004",
+      "title": "JSON schema max depth 3",
+      "status": "pass",
+      "evidence": "5 tests in 'max depth 3 (VAL-DATA-004)' describe block all pass. Tests verify: deeply nested structures collapsed beyond depth 3, large objects beyond depth 3 collapsed, boundary behavior at depth 3 correct.",
+      "testNames": [
+        "enforces max depth of 3 for deeply nested structures",
+        "collapses large objects beyond depth 3",
+        "handles nesting exactly at depth 3 boundary",
+        "does not nest output beyond 3 levels for large objects",
+        "collapses deeply nested structures at depth boundary"
+      ],
+      "steps": [
+        { "action": "Run vitest with json-schema filter", "expected": "All max depth 3 tests pass", "observed": "All 5 tests pass" }
+      ],
+      "issues": null
+    }
+  ],
+  "allTestsPassed": true,
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 4 assertions (VAL-DATA-001 through VAL-DATA-004): all 4 passed. 33 total tests in json-schema.test.ts all pass with 0 failures. Test execution completed in 287ms."
+}
