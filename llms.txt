@@ -14,7 +14,7 @@ Pi extension that intercepts tool_call/tool_result hooks and compresses output b
 ## Install
 
 ```
-pi install npm:pi-rtk
+pi install npm:pi-token-killer
 ```
 
 ## Key Concepts

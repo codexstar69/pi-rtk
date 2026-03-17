@@ -30,7 +30,7 @@ A Pi extension that intercepts tool output and strips noise before the LLM sees 
 ## Install
 
 ```bash
-pi install npm:pi-rtk
+pi install npm:pi-token-killer
 ```
 
 That's it. RTK activates automatically on your next session.

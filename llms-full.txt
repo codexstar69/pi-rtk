@@ -11,7 +11,7 @@ Pure TypeScript, ESM, no binary dependency. Uses better-sqlite3 for analytics tr
 ## Install
 
 ```
-pi install npm:pi-rtk
+pi install npm:pi-token-killer
 ```
 
 ## Architecture
