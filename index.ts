@@ -20,6 +20,8 @@ import {
 } from "./src/pipeline.js";
 import { formatGainOutput } from "./src/gain.js";
 import { formatDiscoverOutput } from "./src/discover.js";
+import { RtkSettingsPanel } from "./src/settings-panel.js";
+import { loadSettings, saveSettings, type SettingsScope } from "./src/settings.js";
 import type { SavingsPeriod } from "./src/tracker.js";
 
 export default function (pi: ExtensionAPI) {
@@ -165,6 +167,28 @@ export default function (pi: ExtensionAPI) {
 
         const output = formatDiscoverOutput(db);
         ctx.ui.notify(output, "info");
+        return;
+      }
+
+      if (sub === "settings") {
+        const loaded = loadSettings(ctx.cwd);
+        const currentScope: SettingsScope = loaded.source === "project" ? "project" : "global";
+
+        ctx.ui.custom((tui: any, theme: any, kb: any, done: () => void) => {
+          const panel = new RtkSettingsPanel({
+            config: { ...config },
+            scope: currentScope,
+            cwd: ctx.cwd,
+            save: (cfg, scope, cwd) => {
+              saveSettings(cfg, scope, cwd);
+              // Update the live config
+              Object.assign(config, cfg);
+              state.config = config;
+            },
+          });
+          panel.onClose = () => done();
+          return panel;
+        }, { overlay: true });
         return;
       }
 
