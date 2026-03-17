@@ -383,12 +383,10 @@ describe("findFilter", () => {
     };
   }
 
-  it("returns null when no filters are registered (initial state)", () => {
-    // Default state: empty registry
+  it("returns null for commands with no matching filter", () => {
+    // Even with filters registered, non-matching commands return null.
     const config = DEFAULTS;
-    const result = findFilter("git status", config);
-    // There are no filters registered in the initial state,
-    // so findFilter will always return null.
+    const result = findFilter("echo hello", config);
     expect(result).toBeNull();
   });
 

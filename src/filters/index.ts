@@ -5,6 +5,7 @@
 
 import type { RtkConfig } from "../config.js";
 import { getFilterGroup } from "../config.js";
+import { createGitStatusFilter } from "./git-status.js";
 
 /** Result returned by every filter's apply(). */
 export interface FilterResult {
@@ -28,9 +29,11 @@ export interface Filter {
 
 /**
  * All registered filters. Order matters — first match wins.
- * Filters will be added in later features; starts empty.
+ * Git filters are registered first as they provide the highest value.
  */
-const ALL_FILTERS: Filter[] = [];
+const ALL_FILTERS: Filter[] = [
+  createGitStatusFilter(),
+];
 
 /** Register a filter (used by filter modules during setup). */
 export function registerFilter(filter: Filter): void {
