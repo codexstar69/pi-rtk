@@ -1,0 +1,45 @@
+{
+  "featureId": "discover-command",
+  "reviewedAt": "2026-03-17T08:15:00.000Z",
+  "commitId": "84c4b8e",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Clean implementation of /rtk discover command. formatDiscoverOutput is a well-structured pure function that queries unfiltered_commands, matches via the existing matcher, estimates savings with per-filter ratios, sorts by potential savings descending, and produces readable output with total. Pipeline integration correctly records unfiltered commands with try/catch guard. Schema addition is idempotent. Subcommand registration follows the established pattern from 'gain'. Two non-blocking issues found: one dead variable and one weak test assertion.",
+    "issues": [
+      {
+        "file": "src/discover.ts",
+        "line": 154,
+        "severity": "non_blocking",
+        "description": "Dead variable: `const savedTokens = formatTokens(opp.estimatedSavedTokens)` is computed but never used in the output line. Likely intended to be included in the per-opportunity display. Should either be used in the template string or removed."
+      },
+      {
+        "file": "test/discover.test.ts",
+        "line": 77,
+        "severity": "non_blocking",
+        "description": "Weak assertion: `expect(output).toMatch(/3/)` for 'shows run count per command pattern' — the digit 3 could match incidentally in token counts or percentages. A more specific pattern like `/ran 3x/` would be more robust."
+      },
+      {
+        "file": "test/discover.test.ts",
+        "line": 134,
+        "severity": "non_blocking",
+        "description": "Weak assertion: 'total is sum of individual command estimates' test only checks that a K-formatted number appears in output (`/\\d+(\\.\\d+)?K/`), but doesn't verify the actual sum is correct. With a single command this is trivially correct, but the test name implies stronger validation than is present."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The unfiltered_commands table has no time-based pruning or size limit. Over long usage, this table will grow unbounded. The existing architecture.md documents the SQLite pattern but doesn't mention data retention/cleanup policies. Future features may need a cleanup strategy (e.g., prune records older than 30d on session_start).",
+      "evidence": "src/db/schema.ts — unfiltered_commands table has no TTL. src/discover.ts queries all records with no time filter. Compare to command_runs which also has no pruning but is queried with time periods in gain.ts."
+    },
+    {
+      "area": "conventions",
+      "observation": "The tsconfig.json does not enable noUnusedLocals, which means dead variables like the one on discover.ts:154 are not caught at typecheck time. This is a project-wide setting choice, not specific to this feature.",
+      "evidence": "tsconfig.json has strict:true but noUnusedLocals is not set (it's not included in the strict flag). The dead variable savedTokens in discover.ts:154 would be caught with this option."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "PASS. The discover-command feature is well-implemented with clean code, proper integration into the pipeline and subcommand router, and comprehensive test coverage for all three validation assertions (VAL-UX-007, VAL-UX-008, VAL-UX-009). The formatDiscoverOutput function is a proper pure function taking only the DB handle. Pipeline correctly tracks unfiltered commands with error guards. Two non-blocking issues: a dead variable (savedTokens computed but unused) and a couple of weak test assertions that test the right behavior but with overly loose regex patterns. No blocking issues found."
+}

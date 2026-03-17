@@ -1,0 +1,57 @@
+{
+  "featureId": "settings-panel",
+  "reviewedAt": "2026-03-17T08:15:00.000Z",
+  "commitId": "7cac74f",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "The settings panel implementation is solid and follows the pi-lcm/pi-voice reference patterns closely. The Component interface (render/handleInput/invalidate) is correctly implemented as a class, consistent with both reference implementations. 15 rows (scope + 10 filters + 4 tee items) with arrow key navigation, Enter toggle, Escape close, and render caching are all present. The index.ts integration correctly loads settings, creates the panel via ctx.ui.custom() with overlay:true, and persists changes while updating live config. Tests cover all 8 VAL-UX assertions with 27 test cases. The http filter is intentionally omitted from the panel per the feature description (which explicitly lists only 10 filters), even though FilterGroupConfig includes http — this is correct per spec.",
+    "issues": [
+      {
+        "file": "src/settings-panel.ts",
+        "line": 76,
+        "severity": "non_blocking",
+        "description": "Uses `export class RtkSettingsPanel` while AGENTS.md says 'State via closure variables, NOT classes'. However, both pi-lcm (LcmSettingsPanel) and pi-voice (VoiceSettingsPanel) reference implementations also use classes for Pi Component instances. The convention applies to extension-level state in index.ts, not Pi Components. This is consistent but AGENTS.md could be clearer."
+      },
+      {
+        "file": "src/settings-panel.ts",
+        "line": 165,
+        "severity": "non_blocking",
+        "description": "Config is passed as `{ ...config }` (shallow copy) from index.ts line 181. This means `config.filters` and `config.tee` are shared references. Mutations in the panel (e.g., `this.deps.config.filters[key] = !this.deps.config.filters[key]`) mutate the original config object's nested properties. The save callback then does `Object.assign(config, cfg)` which is redundant since cfg IS the same nested objects. This works correctly in practice (the live config IS updated), but the intent of the shallow copy is misleading — it doesn't provide isolation."
+      },
+      {
+        "file": "src/settings-panel.ts",
+        "line": 0,
+        "severity": "non_blocking",
+        "description": "The `http` filter exists in FilterGroupConfig but is not exposed in the settings panel. The feature description explicitly lists only 10 filters (git, ls, test, lint, grep, json, docker, npm, read, logDedup) so this is per-spec, but if the http filter was intended to be user-configurable, it would need to be added here."
+      },
+      {
+        "file": "test/settings-panel.test.ts",
+        "line": 290,
+        "severity": "non_blocking",
+        "description": "VAL-UX-015 (Settings loaded on startup) test first writes to `tmpDir/.pi/agent/settings.json` (global path) then creates `tmpDir/.pi/settings.json` (project path) and only validates the project-scoped load. The global path test is effectively dead code since loadSettings uses os.homedir() for the global path, not tmpDir. The test still verifies project-scoped loading works, which partially covers VAL-UX-015, but the global startup loading path is not fully tested in isolation."
+      },
+      {
+        "file": "test/settings-panel.test.ts",
+        "line": 370,
+        "severity": "non_blocking",
+        "description": "VAL-UX-017 (defaults when no files) test validates the DEFAULTS constant directly rather than exercising loadSettings with a truly empty directory where both project and global paths have no settings. This is because the test can't control os.homedir(). The test does verify the correct default values, but doesn't exercise the actual load-with-fallback-to-defaults code path end-to-end."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "AGENTS.md says 'State via closure variables, NOT classes', but Pi Component instances (settings panels) must be classes to satisfy the Component interface (render/handleInput/invalidate). Both pi-lcm and pi-voice use classes for this. AGENTS.md should clarify that the 'no classes' rule applies to extension-level state management in index.ts, not Pi Component implementations.",
+      "evidence": "src/settings-panel.ts:76 uses `export class RtkSettingsPanel`. pi-lcm/src/settings-panel.ts:59 uses `export class LcmSettingsPanel`. pi-voice settings-panel.ts:55 uses `export class VoiceSettingsPanel`. All three follow the same pattern."
+    },
+    {
+      "area": "conventions",
+      "observation": "The pre-existing config.test.ts test isolation issue (5 failures due to user's real global settings) was noted by the worker but not fixed. The existing fix in commit ea73357 ('Fix config test isolation: mock os.homedir()') is the HEAD commit, suggesting someone already tried to fix this, but the config tests still leak. This is a pre-existing issue, not introduced by this feature.",
+      "evidence": "Worker transcript confirms: 'All 5 failures are pre-existing in config.test.ts caused by user's global ~/.pi/agent/settings.json containing rtk.filters.git=false'. Worker verified by stashing changes and confirming same failures."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The settings-panel implementation passes review. The code follows the pi-lcm/pi-voice reference pattern, correctly implements all 15 rows with navigation/toggle/escape/persistence, and is properly integrated into index.ts as a 'settings' subcommand. All 8 VAL-UX assertions (010-017) are covered by 27 tests. The non-blocking issues are: (1) shallow copy semantics in index.ts integration that work but are semantically misleading, (2) some test coverage gaps around global settings loading due to os.homedir() not being mocked, and (3) AGENTS.md convention ambiguity about classes vs closures for Pi Components."
+}

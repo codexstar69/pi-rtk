@@ -45,3 +45,14 @@ Architectural decisions, patterns, and conventions discovered during implementat
 - Opened via `ctx.ui.custom()` with overlay options
 - Arrow key navigation, Enter toggles, Escape closes
 - Render caching for performance
+
+## Data Retention
+- `unfiltered_commands` table (used by /rtk discover) has no time-based pruning or size limit
+- Over long usage this table grows unbounded — may need cleanup strategy (e.g., prune records older than 30d on session_start)
+- `command_runs` table also has no auto-pruning but is queried with time period filters in /rtk gain
+
+## Test Isolation: Settings/Config
+- Tests that use `loadSettings()` or `resolveConfig()` must mock `os.homedir()` to prevent the user's real global `~/.pi/agent/settings.json` from leaking into tests
+- Pattern: `vi.mock("node:os")` with `importOriginal`, wrap `homedir` as `vi.fn`, set `mockReturnValue(tmpDir)` in beforeEach, `mockRestore()` in afterEach
+- This redirects `getGlobalSettingsPath()` to a non-existent path, causing loadSettings to fall back to defaults
+- `os.tmpdir()` is NOT affected by the mock (uses importOriginal), so `makeTmpDir()` works correctly

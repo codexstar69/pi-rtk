@@ -1,0 +1,21 @@
+{
+  "featureId": "fix-config-test-isolation",
+  "reviewedAt": "2026-03-17T08:10:00.000Z",
+  "commitId": "ea73357",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Clean, minimal fix that properly isolates config tests from the user's global ~/.pi/agent/settings.json. The approach uses vi.mock('node:os') with importOriginal to wrap only os.homedir() as a vi.fn, then each describe block's beforeEach sets mockReturnValue(tmpDir) and afterEach calls mockRestore(). This redirects getGlobalSettingsPath() to a non-existent path inside the temp directory, causing loadSettings to fall back to 'default' source as tests expect. The makeTmpDir() helper correctly uses os.tmpdir() (not os.homedir()), so mock doesn't interfere with temp directory creation. All three test suites (resolveConfig, loadSettings, saveSettings) are consistently mocked. No production code was changed. The stray untracked test/template-edge.test.ts was deleted from disk.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "AGENTS.md testing section could mention that tests using settings/config functions should mock os.homedir() to prevent global settings leakage. This is a common gotcha when running tests on machines with real ~/.pi/agent/settings.json files.",
+      "evidence": "test/config.test.ts:12-15 — vi.mock pattern for os.homedir isolation. This pattern was needed because loadSettings() calls getGlobalSettingsPath() which uses os.homedir() internally."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Pass. The fix correctly isolates all config/settings tests from the user's global settings by mocking os.homedir() via vi.mock('node:os'). The approach is robust (module-level mock with per-test setup/teardown), minimal (18 lines added, no production code changes), and follows standard Vitest ESM mocking patterns. All 751 tests pass, typecheck clean. Stray template-edge.test.ts deleted."
+}
