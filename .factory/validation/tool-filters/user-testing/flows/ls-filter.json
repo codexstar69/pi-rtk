@@ -1,0 +1,154 @@
+{
+  "groupId": "ls-filter",
+  "testedAt": "2026-03-17T11:53:00Z",
+  "isolation": {
+    "projectPath": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testCommand": "bun run test -- ls",
+    "sourceFile": "src/filters/ls.ts",
+    "testFile": "test/ls.test.ts"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": [
+    {
+      "id": "VAL-TOOL-001",
+      "title": "ls filter happy path",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with ls pattern",
+          "expected": "describe('ls filter happy path (VAL-TOOL-001)') tests pass",
+          "observed": "All 4 tests in describe block passed"
+        },
+        {
+          "action": "Verify 'compacts typical ls -la output with directory grouping and >60% savings' test",
+          "expected": "Test checks directory grouping (src/, test/, docs/), file listing (index.ts, package.json), extension breakdown (📊), and >60% savings",
+          "observed": "Test passed — verifies filtered output contains src/, test/, docs/, index.ts, package.json, has 📊 summary, and savings > 0.6"
+        },
+        {
+          "action": "Verify supplementary tests: simple ls, empty output, single file",
+          "expected": "Edge cases handled gracefully",
+          "observed": "All 3 supplementary tests passed"
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/ls-filter/verbose-test-output.txt",
+        "passingTests": [
+          "ls filter happy path (VAL-TOOL-001) > compacts typical ls -la output with directory grouping and >60% savings",
+          "ls filter happy path (VAL-TOOL-001) > handles simple ls output (no flags)",
+          "ls filter happy path (VAL-TOOL-001) > handles empty output",
+          "ls filter happy path (VAL-TOOL-001) > handles single file output"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-002",
+      "title": "ls filter hides noise directories",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with ls pattern",
+          "expected": "describe('ls filter hides noise directories (VAL-TOOL-002)') tests pass",
+          "observed": "All 2 tests in describe block passed"
+        },
+        {
+          "action": "Verify 'strips node_modules, .git, __pycache__, .next, dist, build, coverage' test",
+          "expected": "Test verifies node_modules, .git, __pycache__, .next, dist, build, coverage, .venv, target, .cache, .nuxt, .svelte-kit all omitted; src/ and real files preserved",
+          "observed": "Test passed — all 12 noise directories verified absent, real content (src/, index.ts, tsconfig.json) verified present"
+        },
+        {
+          "action": "Verify 'hides noise in simple ls output (no -la)' test",
+          "expected": "Noise hidden even without -la flags",
+          "observed": "Test passed — node_modules and dist absent, src and index.ts present"
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/ls-filter/verbose-test-output.txt",
+        "passingTests": [
+          "ls filter hides noise directories (VAL-TOOL-002) > strips node_modules, .git, __pycache__, .next, dist, build, coverage",
+          "ls filter hides noise directories (VAL-TOOL-002) > hides noise in simple ls output (no -la)"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-003",
+      "title": "ls filter human-readable sizes",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with ls pattern",
+          "expected": "describe('ls filter human-readable sizes (VAL-TOOL-003)') tests pass",
+          "observed": "All 2 tests in describe block passed"
+        },
+        {
+          "action": "Verify 'displays sizes in B/K/M/G format from ls -la output' test",
+          "expected": "Byte sizes converted to human-readable: 375→375B, 1400→1.4K, 11600→11.3K, 1048576→1.0M, 104857600→100.0M",
+          "observed": "Test passed — all 5 size conversions verified via regex matches (375B, 1.4K, 11.3K, 1.0M, 100.0M)"
+        },
+        {
+          "action": "Verify 'handles zero-byte files' test",
+          "expected": "Zero-byte files show 0B",
+          "observed": "Test passed — output contains '0B'"
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/ls-filter/verbose-test-output.txt",
+        "passingTests": [
+          "ls filter human-readable sizes (VAL-TOOL-003) > displays sizes in B/K/M/G format from ls -la output",
+          "ls filter human-readable sizes (VAL-TOOL-003) > handles zero-byte files"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-004",
+      "title": "find/fd grouped by directory",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with ls pattern",
+          "expected": "describe('find/fd grouped by parent directory (VAL-TOOL-004)') tests pass",
+          "observed": "All 4 tests in describe block passed"
+        },
+        {
+          "action": "Verify 'groups find output by parent directory' test",
+          "expected": "find output grouped by src/, src/filters/, test/ with directory counts and 📊 summary",
+          "observed": "Test passed — verifies src/, src/filters/, test/ grouping and 📊 summary present"
+        },
+        {
+          "action": "Verify 'groups fd output by parent directory' test",
+          "expected": "fd output grouped similarly with directory headers and summary",
+          "observed": "Test passed — verifies src/, src/filters/, test/ grouping and 📊 summary"
+        },
+        {
+          "action": "Verify noise filtering in find output",
+          "expected": "node_modules, .git, dist, __pycache__ filtered from find results",
+          "observed": "Test passed — all noise dirs absent, src/ preserved"
+        },
+        {
+          "action": "Verify empty find output handled",
+          "expected": "Empty output returns empty string without crash",
+          "observed": "Test passed — empty string returned"
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/ls-filter/verbose-test-output.txt",
+        "passingTests": [
+          "find/fd grouped by parent directory (VAL-TOOL-004) > groups find output by parent directory",
+          "find/fd grouped by parent directory (VAL-TOOL-004) > groups fd output by parent directory",
+          "find/fd grouped by parent directory (VAL-TOOL-004) > filters out noise directories in find output",
+          "find/fd grouped by parent directory (VAL-TOOL-004) > handles empty find output"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 4 assertions: 4 passed, 0 failed. All 32 tests in test/ls.test.ts passed (vitest v3.2.4, 301ms). Each assertion has dedicated describe blocks with explicit VAL-TOOL-00N labels and comprehensive coverage including edge cases."
+}

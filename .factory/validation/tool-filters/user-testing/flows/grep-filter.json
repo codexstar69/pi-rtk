@@ -1,0 +1,120 @@
+{
+  "groupId": "grep-filter",
+  "testedAt": "2026-03-17T11:53:04Z",
+  "isolation": {
+    "projectPath": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testCommand": "cd \"/Users/codex/Downloads/Code Files/pi-rtk\" && bun run test -- grep 2>&1",
+    "sourceFile": "src/filters/grep.ts",
+    "testFile": "test/grep.test.ts"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": [
+    {
+      "id": "VAL-TOOL-017",
+      "title": "grep groups by file - Results grouped by file, max 5 per file, max 20 files",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run bun run test -- grep",
+          "expected": "All grep grouping/capping tests pass",
+          "observed": "All 26 tests passed including 3 tests directly verifying VAL-TOOL-017"
+        },
+        {
+          "action": "Verify test 'groups results by file (VAL-TOOL-017)' passes",
+          "expected": "Output contains file headers (src/foo.ts:, src/bar.ts:) and summary",
+          "observed": "Test passed — assertions verify file grouping headers and summary line"
+        },
+        {
+          "action": "Verify test 'caps at 5 matches per file with overflow indicator (VAL-TOOL-017)' passes",
+          "expected": "Only 5 match lines shown per file, overflow indicator present",
+          "observed": "Test passed — asserts matchLines.length === 5 and '... 7 more matches' present"
+        },
+        {
+          "action": "Verify test 'caps at 20 files with overflow indicator (VAL-TOOL-017)' passes",
+          "expected": "Max 20 files shown, overflow indicator for remaining files",
+          "observed": "Test passed — asserts '... 10 more files' present and summary shows all 30 files"
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/grep-filter/vitest-verbose-output.txt",
+        "tests": [
+          "grep filter — happy path > groups results by file (VAL-TOOL-017)",
+          "grep filter — max 5 per file > caps at 5 matches per file with overflow indicator (VAL-TOOL-017)",
+          "grep filter — max 20 files > caps at 20 files with overflow indicator (VAL-TOOL-017)",
+          "grep filter — combined > groups, caps, deduplicates, and summarizes in one pass",
+          "grep filter — edge cases > handles large output (>500 lines)"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-018",
+      "title": "grep match count summary - Output ends with {N} matches in {N} files",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run bun run test -- grep",
+          "expected": "Summary line tests pass",
+          "observed": "All 26 tests passed including 2 tests directly verifying VAL-TOOL-018"
+        },
+        {
+          "action": "Verify test 'appends N matches in N files' passes",
+          "expected": "Filtered output contains '4 matches in 3 files'",
+          "observed": "Test passed — asserts summary line with correct plural counts"
+        },
+        {
+          "action": "Verify test 'uses singular for 1 match in 1 file' passes",
+          "expected": "Filtered output contains '1 match in 1 file' (singular)",
+          "observed": "Test passed — asserts singular form for single match/file"
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/grep-filter/vitest-verbose-output.txt",
+        "tests": [
+          "grep filter — summary (VAL-TOOL-018) > appends N matches in N files",
+          "grep filter — summary (VAL-TOOL-018) > uses singular for 1 match in 1 file",
+          "grep filter — happy path > groups results by file (VAL-TOOL-017)",
+          "grep filter — happy path > achieves >60% savings on typical output",
+          "grep filter — max 20 files > caps at 20 files with overflow indicator (VAL-TOOL-017)",
+          "grep filter — edge cases > handles large output (>500 lines)",
+          "grep filter — combined > groups, caps, deduplicates, and summarizes in one pass"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-019",
+      "title": "grep deduplicates identical lines - Duplicate match lines collapsed",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run bun run test -- grep",
+          "expected": "Dedup tests pass",
+          "observed": "All 26 tests passed including 2 tests directly verifying VAL-TOOL-019"
+        },
+        {
+          "action": "Verify test 'deduplicates identical match lines across files' passes",
+          "expected": "Identical import lines collapsed to ≤1 occurrence, unique lines preserved, total count correct",
+          "observed": "Test passed — asserts importLines.length ≤ 1, 'const foo = 42' present, '4 matches in 4 files' in summary"
+        },
+        {
+          "action": "Verify test 'shows dedup count for collapsed lines' passes",
+          "expected": "Dedup count shown for collapsed identical lines (e.g. '3 files' or 'x3')",
+          "observed": "Test passed — asserts output matches /3 files|seen in 3|x3|\\(3\\)/i"
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/grep-filter/vitest-verbose-output.txt",
+        "tests": [
+          "grep filter — dedup (VAL-TOOL-019) > deduplicates identical match lines across files",
+          "grep filter — dedup (VAL-TOOL-019) > shows dedup count for collapsed lines",
+          "grep filter — combined > groups, caps, deduplicates, and summarizes in one pass"
+        ]
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 3 assertions: 3 passed. All 26 grep filter tests pass (vitest, 6ms total test time). VAL-TOOL-017 verified by 3 direct tests (file grouping, 5-per-file cap, 20-file cap) plus 2 integration tests. VAL-TOOL-018 verified by 2 direct tests (plural and singular summary forms) plus 5 tests that also assert summary lines. VAL-TOOL-019 verified by 2 direct tests (dedup collapse and dedup count display) plus 1 combined integration test."
+}

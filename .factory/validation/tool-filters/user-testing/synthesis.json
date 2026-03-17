@@ -1,0 +1,36 @@
+{
+  "milestone": "tool-filters",
+  "round": 1,
+  "status": "pass",
+  "assertionsSummary": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0,
+    "blocked": 0
+  },
+  "passedAssertions": [
+    "VAL-TOOL-001",
+    "VAL-TOOL-002",
+    "VAL-TOOL-003",
+    "VAL-TOOL-004",
+    "VAL-TOOL-005",
+    "VAL-TOOL-006",
+    "VAL-TOOL-007",
+    "VAL-TOOL-008",
+    "VAL-TOOL-009",
+    "VAL-TOOL-010",
+    "VAL-TOOL-011",
+    "VAL-TOOL-012",
+    "VAL-TOOL-013",
+    "VAL-TOOL-014",
+    "VAL-TOOL-015",
+    "VAL-TOOL-016",
+    "VAL-TOOL-017",
+    "VAL-TOOL-018",
+    "VAL-TOOL-019"
+  ],
+  "failedAssertions": [],
+  "blockedAssertions": [],
+  "appliedUpdates": [],
+  "previousRound": null
+}

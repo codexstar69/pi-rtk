@@ -1,0 +1,158 @@
+{
+  "groupId": "lint-filters",
+  "testedAt": "2026-03-17T11:52:26.000Z",
+  "isolation": {
+    "projectPath": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testCommand": "cd \"/Users/codex/Downloads/Code Files/pi-rtk\" && bun run test -- lint 2>&1",
+    "testFile": "test/lint.test.ts",
+    "sourceFiles": [
+      "src/filters/lint-tsc.ts",
+      "src/filters/lint-js.ts",
+      "src/filters/lint-py.ts",
+      "src/filters/lint-rs.ts"
+    ]
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": [
+    {
+      "id": "VAL-TOOL-012",
+      "title": "lint-tsc groups by error code",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Read test file test/lint.test.ts to identify tests for VAL-TOOL-012",
+          "expected": "Test(s) that verify TSC errors are grouped by code, max 5 per code, total summary",
+          "observed": "Found test 'groups errors by TS code' (verifies TS2322 grouped as 3 errors, TS2304 as 1, summary '✗ 4 errors (2 codes)'), test 'caps at 5 instances per code with overflow indicator' (verifies 8 errors show 5 + '... and 3 more'), test 'includes total error count summary' (verifies '✗ 3 errors (3 codes)'), and test 'handles colon-separated format' (verifies alternate TSC format grouped correctly)"
+        },
+        {
+          "action": "Run bun run test -- lint",
+          "expected": "All lint-tsc grouping tests pass",
+          "observed": "All 53 tests passed including all lint-tsc tests. Exit code 0."
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/lint-filters/test-output.txt",
+        "relevantTests": [
+          "lint-tsc > groups errors by TS code",
+          "lint-tsc > caps at 5 instances per code with overflow indicator",
+          "lint-tsc > includes total error count summary",
+          "lint-tsc > handles colon-separated format (file:line:col - error)"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-013",
+      "title": "lint-tsc strips suggestions",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Read test file test/lint.test.ts to identify tests for VAL-TOOL-013",
+          "expected": "Test(s) that verify 'Did you mean' lines are removed from TSC output",
+          "observed": "Found test 'strips \"Did you mean\" suggestions' (verifies 'Did you mean' not in output, TS2551 still grouped correctly) and test 'strips \"help:\" lines' (verifies 'help:' suggestion lines also removed)"
+        },
+        {
+          "action": "Run bun run test -- lint",
+          "expected": "All lint-tsc suggestion stripping tests pass",
+          "observed": "All 53 tests passed including both suggestion-stripping tests. Exit code 0."
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/lint-filters/test-output.txt",
+        "relevantTests": [
+          "lint-tsc > strips 'Did you mean' suggestions",
+          "lint-tsc > strips 'help:' lines"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-014",
+      "title": "lint-js groups by rule",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Read test file test/lint.test.ts to identify tests for VAL-TOOL-014",
+          "expected": "Test(s) that verify ESLint/biome errors grouped by rule name with >70% savings",
+          "observed": "Found test 'groups eslint errors by rule name' (verifies no-unused-vars grouped as 3 errors, @typescript-eslint/no-explicit-any as 1, summary '✗ 4 errors (2 rules)'), test 'handles biome format with ━ separator' (verifies biome rule grouping), test 'caps at 5 instances per rule with overflow indicator' (verifies 8 errors → 5 shown + overflow), and test 'achieves >70% savings on large output' (verifies savings > 0.7)"
+        },
+        {
+          "action": "Run bun run test -- lint",
+          "expected": "All lint-js grouping and savings tests pass",
+          "observed": "All 53 tests passed including all lint-js tests. Exit code 0."
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/lint-filters/test-output.txt",
+        "relevantTests": [
+          "lint-js > groups eslint errors by rule name",
+          "lint-js > handles biome format with ━ separator",
+          "lint-js > caps at 5 instances per rule with overflow indicator",
+          "lint-js > achieves >70% savings on large output"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-015",
+      "title": "lint-py groups by rule code",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Read test file test/lint.test.ts to identify tests for VAL-TOOL-015",
+          "expected": "Test(s) that verify Ruff errors grouped by rule code",
+          "observed": "Found test 'groups errors by rule code' (verifies F401 grouped as 3 errors, E501 as 1, summary '✗ 4 errors (2 rules)'), test 'caps at 5 instances per code with overflow indicator' (verifies 8 F401 errors → 5 shown + '... and 3 more'), and test 'includes total error count summary' (verifies '✗ 3 errors (3 rules)')"
+        },
+        {
+          "action": "Run bun run test -- lint",
+          "expected": "All lint-py grouping tests pass",
+          "observed": "All 53 tests passed including all lint-py tests. Exit code 0."
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/lint-filters/test-output.txt",
+        "relevantTests": [
+          "lint-py > groups errors by rule code",
+          "lint-py > caps at 5 instances per code with overflow indicator",
+          "lint-py > includes total error count summary"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-016",
+      "title": "lint-rs groups by lint name",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Read test file test/lint.test.ts to identify tests for VAL-TOOL-016",
+          "expected": "Test(s) that verify Clippy warnings grouped by lint name",
+          "observed": "Found test 'groups warnings by lint name' (verifies clippy::needless_return grouped as 2 warnings, clippy::unused_imports as 1, summary '✗ 3 warnings (2 lints)'), test 'caps at 5 instances per lint with overflow indicator' (verifies 8 warnings → 5 shown + '... and 3 more'), test 'handles error-level diagnostics' (verifies E0425 grouped as errors), and test 'includes total summary' (verifies '✗ 2 warnings (2 lints)')"
+        },
+        {
+          "action": "Run bun run test -- lint",
+          "expected": "All lint-rs grouping tests pass",
+          "observed": "All 53 tests passed including all lint-rs tests. Exit code 0."
+        }
+      ],
+      "evidence": {
+        "testOutput": "tool-filters/lint-filters/test-output.txt",
+        "relevantTests": [
+          "lint-rs > groups warnings by lint name",
+          "lint-rs > caps at 5 instances per lint with overflow indicator",
+          "lint-rs > handles error-level diagnostics",
+          "lint-rs > includes total summary"
+        ],
+        "consoleErrors": "none"
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 5 assertions: 5 passed, 0 failed. All lint filter tests (53 total in test/lint.test.ts) pass successfully. Each assertion has corresponding tests that exercise the described behavior: TSC error grouping by code with cap and summary, TSC suggestion stripping, ESLint/biome rule grouping with >70% savings, Ruff rule code grouping, and Clippy lint name grouping."
+}

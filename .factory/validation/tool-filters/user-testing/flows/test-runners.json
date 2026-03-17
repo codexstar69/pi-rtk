@@ -1,0 +1,180 @@
+{
+  "groupId": "test-runners",
+  "testedAt": "2026-03-17T11:53:04.000Z",
+  "isolation": {
+    "projectPath": "/Users/codex/Downloads/Code Files/pi-rtk",
+    "testCommand": "bun run test -- test-runners",
+    "testFile": "test/test-runners.test.ts"
+  },
+  "toolsUsed": ["vitest"],
+  "assertions": [
+    {
+      "id": "VAL-TOOL-005",
+      "title": "test-js happy path with failures",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with test-runners filter",
+          "expected": "Tests covering JS test output compaction with failure details pass",
+          "observed": "All relevant tests passed (6 tests)"
+        }
+      ],
+      "evidence": {
+        "tests": [
+          "test-js vitest with failures (VAL-TOOL-005) > compacts output with failure details and >90% savings",
+          "test-js vitest with failures (VAL-TOOL-005) > includes failed test names",
+          "test-js jest with failures > shows failure summary with >90% savings",
+          "test-js bun test with failures > shows failure summary",
+          "test-js savings on large output > achieves >90% savings on failure with large vitest output (VAL-TOOL-005)"
+        ],
+        "testOutput": "tool-filters/test-runners/vitest-verbose-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-006",
+      "title": "test-js all-pass single line",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with test-runners filter",
+          "expected": "Tests verifying all-pass produces single summary line pass",
+          "observed": "All relevant tests passed (4 tests)"
+        }
+      ],
+      "evidence": {
+        "tests": [
+          "test-js vitest all-pass (VAL-TOOL-006) > produces single summary line",
+          "test-js jest all-pass > produces single summary line",
+          "test-js bun test all-pass > produces single summary line",
+          "test-js savings on large output > achieves good savings on all-pass large output"
+        ],
+        "testOutput": "tool-filters/test-runners/vitest-verbose-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-007",
+      "title": "test-js strips stack traces",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with test-runners filter",
+          "expected": "Tests verifying stack trace stripping and file:line preservation pass",
+          "observed": "All relevant tests passed (5 tests)"
+        }
+      ],
+      "evidence": {
+        "tests": [
+          "test-js strips stack traces (VAL-TOOL-007) > does not include full stack trace paths",
+          "test-js strips stack traces (VAL-TOOL-007) > preserves first file:line reference",
+          "test-js jest with failures > strips stack traces from jest output",
+          "test-js bun test with failures > strips stack traces from bun output"
+        ],
+        "testOutput": "tool-filters/test-runners/vitest-verbose-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-008",
+      "title": "test-py happy path",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with test-runners filter",
+          "expected": "Tests covering pytest output compaction with >80% savings pass",
+          "observed": "All relevant tests passed (6 tests)"
+        }
+      ],
+      "evidence": {
+        "tests": [
+          "test-py with failures (VAL-TOOL-008) > compacts with >80% savings",
+          "test-py with failures (VAL-TOOL-008) > includes failed test names",
+          "test-py with failures (VAL-TOOL-008) > includes file:line references",
+          "test-py with failures (VAL-TOOL-008) > strips verbose traceback",
+          "test-py large output savings > achieves >80% savings on large failure output (VAL-TOOL-008)",
+          "test-py large output savings > achieves high savings on large all-pass output"
+        ],
+        "testOutput": "tool-filters/test-runners/vitest-verbose-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-009",
+      "title": "test-py all-pass single line",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with test-runners filter",
+          "expected": "Test verifying pytest all-pass produces single summary line passes",
+          "observed": "Test passed"
+        }
+      ],
+      "evidence": {
+        "tests": [
+          "test-py all-pass single line (VAL-TOOL-009) > produces single summary line"
+        ],
+        "testOutput": "tool-filters/test-runners/vitest-verbose-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-010",
+      "title": "test-rs happy path",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with test-runners filter",
+          "expected": "Tests covering cargo test output compaction with >80% savings pass",
+          "observed": "All relevant tests passed (6 tests)"
+        }
+      ],
+      "evidence": {
+        "tests": [
+          "test-rs all-pass (VAL-TOOL-010) > produces single summary line with suite count",
+          "test-rs with failures > compacts with >80% savings (VAL-TOOL-010)",
+          "test-rs with failures > includes failed test names",
+          "test-rs with failures > includes file:line references",
+          "test-rs large output savings > achieves >80% savings on large failure output",
+          "test-rs large output savings > achieves >80% savings on large all-pass output"
+        ],
+        "testOutput": "tool-filters/test-runners/vitest-verbose-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TOOL-011",
+      "title": "test-go happy path",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Run vitest with test-runners filter",
+          "expected": "Tests covering go test output compaction with >80% savings pass",
+          "observed": "All relevant tests passed (6 tests)"
+        }
+      ],
+      "evidence": {
+        "tests": [
+          "test-go all-pass (VAL-TOOL-011) > produces single summary line",
+          "test-go with failures > compacts with failure details",
+          "test-go with failures > includes failed test names",
+          "test-go with failures > includes file:line references",
+          "test-go large output savings > achieves >80% savings on large failure output (VAL-TOOL-011)",
+          "test-go large output savings > achieves >80% savings on large all-pass output"
+        ],
+        "testOutput": "tool-filters/test-runners/vitest-verbose-output.txt",
+        "consoleErrors": "none"
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 7 assertions: 7 passed, 0 failed. All 56 tests in test/test-runners.test.ts passed covering test-js (vitest/jest/bun), test-py (pytest), test-rs (cargo test), and test-go (go test) filters with failure compaction, all-pass single-line, stack trace stripping, and savings thresholds verified."
+}
