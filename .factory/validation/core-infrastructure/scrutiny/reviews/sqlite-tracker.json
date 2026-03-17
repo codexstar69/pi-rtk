@@ -1,0 +1,56 @@
+{
+  "featureId": "sqlite-tracker",
+  "reviewedAt": "2026-03-17T05:15:00.000Z",
+  "commitId": "2746edf",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Implementation is solid and correctly fulfills VAL-CORE-012, VAL-CORE-013, and VAL-CORE-014. connection.ts follows pi-lcm patterns exactly (WAL mode, busy_timeout 5000, foreign_keys ON, secure permissions 0o700/0o600, PASSIVE checkpoint on close, TRUNCATE checkpoint helper). schema.ts creates the command_runs table with all 12 columns from IMPLEMENTATION.md and both required indexes, idempotently via IF NOT EXISTS. tracker.ts implements Tracker class with record() that correctly computes savings_pct and token estimates, and getSavings(period) that correctly filters by 24h/7d/30d/all using Unix-ms cutoffs and returns zeros for empty periods. Tests are comprehensive (19 tests) using in-memory SQLite, covering schema creation, idempotency, record insertion with all computed/optional fields, and savings queries by all periods including edge cases.",
+    "issues": [
+      {
+        "file": "src/tracker.ts",
+        "line": 56,
+        "severity": "non_blocking",
+        "description": "estimateTokens('x'.repeat(rawChars)) creates a temporary string of rawChars length just to compute Math.ceil(rawChars/4). For large outputs (e.g., 100K chars), this allocates ~100KB unnecessarily. Should directly compute Math.ceil(rawChars / 4) instead. Functionally correct but wasteful."
+      },
+      {
+        "file": "src/db/connection.ts",
+        "line": 32,
+        "severity": "non_blocking",
+        "description": "Directory resolution for custom dbPath uses join(resolvedPath, '..') which works for file paths but is fragile. pi-lcm uses dirname(). Minor style difference, functionally correct for all expected usage."
+      },
+      {
+        "file": "src/db/connection.ts",
+        "line": 0,
+        "severity": "non_blocking",
+        "description": "Missing 'synchronous = NORMAL' pragma that pi-lcm sets. Not required by the feature spec but would be a minor performance improvement for WAL mode. The architecture.md library doc doesn't mention this pragma either."
+      },
+      {
+        "file": "test/tracker.test.ts",
+        "line": 14,
+        "severity": "non_blocking",
+        "description": "Tests bypass openDb/closeDb entirely and create Database(':memory:') directly. This means the connection.ts module's singleton behavior, directory creation, permission setting, and checkpoint logic are not unit-tested here. The integration tests (test/integration.test.ts) do exercise openDb/closeDb, so coverage exists elsewhere."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The architecture.md library doc lists 'SQLite Pattern' noting WAL mode, busy_timeout 5000, versioned migrations, and idempotent schema. However pi-lcm also sets 'synchronous = NORMAL' pragma which is not documented in architecture.md or AGENTS.md. The worker omitted it (matching the docs) but pi-lcm includes it. Should architecture.md specify the full pragma set?",
+      "evidence": "pi-lcm connection.ts line 38: db.pragma('synchronous = NORMAL'); pi-rtk connection.ts: missing this pragma; .factory/library/architecture.md SQLite Pattern section lists WAL and busy_timeout but not synchronous"
+    },
+    {
+      "area": "conventions",
+      "observation": "Tracker uses estimateTokens('x'.repeat(n)) pattern to get token count from char count. The estimateTokens function in utils.ts takes a string and returns Math.ceil(str.length/4). Using it with a synthetic string is indirect — could benefit from a utility like estimateTokensFromChars(n) or documenting the pattern in architecture.md.",
+      "evidence": "src/tracker.ts:56-57 — estimateTokens('x'.repeat(rawChars)); src/utils.ts:15-18 — function just divides length by 4"
+    },
+    {
+      "area": "skills",
+      "observation": "Worker skill says 'Do NOT read IMPLEMENTATION.md' but the feature description references 'all columns from IMPLEMENTATION.md schema'. The transcript shows the worker read IMPLEMENTATION.md to verify the schema. The skill procedure contradicts the feature description's reference, though the worker made the right call reading it.",
+      "evidence": "SKILL.md step 4: 'Do NOT read IMPLEMENTATION.md'; Feature description: 'command_runs table and indexes per IMPLEMENTATION.md schema'; Transcript skeleton shows worker read IMPLEMENTATION.md"
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Feature sqlite-tracker passes review. All three validation assertions (VAL-CORE-012, VAL-CORE-013, VAL-CORE-014) are properly implemented. The SQLite connection follows pi-lcm patterns (WAL, busy_timeout, foreign_keys, secure permissions). Schema has all 12 columns and 2 indexes, is idempotent. record() correctly computes savings_pct and token estimates. getSavings() correctly aggregates by time period with zeros for empty results. 19 comprehensive tests use in-memory SQLite. Four non-blocking issues noted: inefficient string allocation in estimateTokens usage, minor dir resolution style difference, missing synchronous=NORMAL pragma, and tests not exercising openDb/closeDb directly."
+}

@@ -1,0 +1,45 @@
+{
+  "featureId": "project-scaffolding",
+  "reviewedAt": "2026-03-17T04:45:00.000Z",
+  "commitId": "845d1e3",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "All 6 utility functions (stripAnsi, estimateTokens, isBinary, shouldFilter, extractBaseCommand, extractText) are correctly implemented per spec. package.json matches spec exactly with correct pi-extension config, scripts, deps, peerDeps, and devDeps. tsconfig.json uses strict mode, ESM, bundler resolution as required. .gitignore covers node_modules, dist, *.db. 51 tests provide solid coverage of happy paths and edge cases. Code follows TypeScript strict mode and ESM patterns with .js import extensions per AGENTS.md conventions. No security issues or anti-patterns found.",
+    "issues": [
+      {
+        "file": "src/utils.ts",
+        "line": 36,
+        "severity": "non_blocking",
+        "description": "shouldFilter redirect regex />/ matches '>' anywhere in the command string, including inside quoted arguments (e.g., echo \"a > b\" would incorrectly be detected as a redirect). This is conservative behavior (skip filtering rather than incorrectly filter), so it's acceptable but imprecise."
+      },
+      {
+        "file": "src/utils.ts",
+        "line": 33,
+        "severity": "non_blocking",
+        "description": "shouldFilter semicolon detection /&&|\\|\\||;/ would match semicolons inside quoted strings. Same conservative behavior — acceptable but imprecise for edge cases."
+      },
+      {
+        "file": ".gitignore",
+        "line": 3,
+        "severity": "non_blocking",
+        "description": ".gitignore was reduced to match spec exactly (node_modules/, dist/, *.db), dropping *.db-wal, *.db-shm, and .DS_Store from a prior version. The WAL/SHM files and .DS_Store could benefit from being ignored, but spec was explicit. Future features using SQLite WAL mode may want to re-add *.db-wal and *.db-shm."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "Feature description claims fulfills VAL-CORE-025 (tiny output passthrough) but this validation assertion is actually implemented in src/pipeline.ts:129 and tested in test/integration.test.ts:222, not in the utils files created by this feature. The scaffolding feature provides the utility functions but the minOutputChars threshold logic lives in the pipeline feature. This is a feature-to-validation mapping inaccuracy, not a code defect.",
+      "evidence": "features.json fulfills array includes VAL-CORE-025, but validation-contract.md says VAL-CORE-025 is 'Output shorter than minOutputChars passes through without filtering' which requires pipeline logic (src/pipeline.ts:128-129), not present in src/utils.ts."
+    },
+    {
+      "area": "conventions",
+      "observation": ".gitignore in spec omits *.db-wal and *.db-shm, but AGENTS.md and environment.md document that SQLite uses WAL mode (busy_timeout 5000). WAL mode creates .db-wal and .db-shm sidecar files that should likely be gitignored. The spec's .gitignore is incomplete for the project's actual SQLite usage pattern.",
+      "evidence": ".factory/library/environment.md: 'WAL mode, busy_timeout 5000, foreign_keys ON'. .gitignore only has '*.db' but WAL mode creates *.db-wal and *.db-shm files."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Project scaffolding passes review. All 6 utility functions are correctly implemented with proper TypeScript strict mode and ESM patterns. 51 tests provide comprehensive coverage. package.json, tsconfig.json, and .gitignore match spec. Three non-blocking issues noted: regex imprecision in shouldFilter for quoted strings (conservative/safe behavior), and .gitignore missing WAL sidecar entries that the project's SQLite usage may produce. One shared-state observation about VAL-CORE-025 being mapped to this feature but actually implemented elsewhere."
+}

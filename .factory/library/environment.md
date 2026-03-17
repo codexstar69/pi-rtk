@@ -22,3 +22,13 @@ Environment variables, external dependencies, and setup notes.
 - Tests use in-memory `:memory:` database
 - Runtime DB stored at `~/.pi/agent/rtk/{hashCwd}.db`
 - WAL mode, busy_timeout 5000, foreign_keys ON
+
+## RTK Environment Variables
+All RTK env vars use the `RTK_` prefix:
+- `RTK_ENABLED` — master enable/disable (boolean)
+- `RTK_DEBUG` — debug mode (boolean)
+- `RTK_MIN_OUTPUT_CHARS` — minimum output chars to filter (integer)
+- `RTK_FILTER_GIT`, `RTK_FILTER_LS`, `RTK_FILTER_TEST`, `RTK_FILTER_LINT`, `RTK_FILTER_GREP`, `RTK_FILTER_JSON`, `RTK_FILTER_DOCKER`, `RTK_FILTER_HTTP`, `RTK_FILTER_READ`, `RTK_FILTER_LOG_DEDUP` — per-group filter enable/disable (boolean)
+- `RTK_TEE_ENABLED` — tee recovery enable/disable (boolean)
+- `RTK_TEE_MAX_FILES` — max tee files to retain (integer)
+- `RTK_TEE_MAX_FILE_SIZE` — max tee file size in chars (integer)

@@ -1,0 +1,51 @@
+{
+  "featureId": "filter-registry",
+  "reviewedAt": "2026-03-17T05:00:00.000Z",
+  "commitId": "4fbf51c",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Solid implementation that correctly fulfills VAL-CORE-015 (3-layer config resolution) and VAL-CORE-016 (filter group enable/disable). Config resolution follows env > settings.json > defaults with proper fallthrough via envBool/envInt helpers. Settings load/save uses atomic temp+rename writes. Filter interface matches expected signature (name, matches, apply→FilterResult). findFilter correctly skips disabled groups. Tests are comprehensive (28 tests) covering all resolution layers, settings CRUD, corruption resilience, and filter dispatch. All 252 tests pass and typecheck is clean. A few non-blocking issues noted below.",
+    "issues": [
+      {
+        "file": "src/config.ts",
+        "line": 103,
+        "severity": "non_blocking",
+        "description": "getFilterGroup fallback returns 'git' for unknown filter names. Comment says 'treat unknown as enabled by returning a group that's always on', but 'git' can be disabled by the user. This means unknown/custom filters would be silently disabled when git is disabled. A dedicated 'unknown' group defaulting to true, or throwing on unrecognized names, would be safer."
+      },
+      {
+        "file": "src/filters/index.ts",
+        "line": 33,
+        "severity": "non_blocking",
+        "description": "Module-level ALL_FILTERS array has no clearFilters()/resetFilters() function. Tests depend on insertion order across test cases within the same describe block (e.g., 'returns matching filter when registered' depends on the filter registered in the previous test). Adding a clearFilters() export (even if only for test use) would make tests more robust and independent."
+      },
+      {
+        "file": "src/config.ts",
+        "line": 140,
+        "severity": "non_blocking",
+        "description": "tee.mode has no env var override (RTK_TEE_MODE), while all other tee fields (enabled, maxFiles, maxFileSize) do have env var overrides. This is an inconsistency that may confuse users who expect uniform env var coverage."
+      },
+      {
+        "file": "test/config.test.ts",
+        "line": 225,
+        "severity": "non_blocking",
+        "description": "Global settings fallback path is not tested — test has comment 'We can't easily mock the global path'. The loadSettings function's global fallback branch (lines 53-56 of settings.ts) has no test coverage. Could be addressed by accepting a globalPath parameter or using dependency injection."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The filter registry uses a module-level mutable array (ALL_FILTERS) with no reset mechanism. Future filter features will call registerFilter() at module load, and tests across features may interfere since there's no way to clear the registry. AGENTS.md doesn't mention whether module-level state should be resettable for testing.",
+      "evidence": "src/filters/index.ts:33 — `const ALL_FILTERS: Filter[] = []` with only push, no clear. Test at test/config.test.ts:282 depends on state from test at line 274."
+    },
+    {
+      "area": "conventions",
+      "observation": "Env var naming convention for RTK config is established (RTK_ENABLED, RTK_FILTER_*, RTK_TEE_*, RTK_DEBUG, RTK_MIN_OUTPUT_CHARS) but not documented in AGENTS.md or library/environment.md. Future workers won't know the established pattern.",
+      "evidence": "src/config.ts uses RTK_ENABLED, RTK_DEBUG, RTK_MIN_OUTPUT_CHARS, RTK_FILTER_GIT..HTTP, RTK_TEE_ENABLED, RTK_TEE_MAX_FILES, RTK_TEE_MAX_FILE_SIZE — none documented outside the source."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Feature passes review. Implementation correctly fulfills both VAL-CORE-015 (env > settings > defaults config resolution) and VAL-CORE-016 (filter group enable/disable via findFilter). Code quality is good with proper TypeScript types, JSDoc comments, and comprehensive tests. Four non-blocking issues identified: getFilterGroup fallback silently maps unknowns to 'git' group, no clearFilters() for test isolation, missing tee.mode env var override, and untested global settings fallback. Two shared state observations: module-level mutable state pattern needs convention guidance, and env var naming convention should be documented."
+}

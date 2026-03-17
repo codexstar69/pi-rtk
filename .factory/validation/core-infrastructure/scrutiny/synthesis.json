@@ -1,0 +1,67 @@
+{
+  "milestone": "core-infrastructure",
+  "round": 1,
+  "status": "pass",
+  "validatorsRun": {
+    "test": { "passed": true, "command": "bun run test", "exitCode": 0 },
+    "typecheck": { "passed": true, "command": "bunx tsc --noEmit", "exitCode": 0 },
+    "lint": { "passed": true, "command": "echo \"no lint configured\"", "exitCode": 0 }
+  },
+  "reviewsSummary": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "failedFeatures": []
+  },
+  "blockingIssues": [],
+  "appliedUpdates": [
+    {
+      "target": "library",
+      "description": "Added RTK env var naming convention and full list to environment.md so future workers know the established pattern",
+      "sourceFeature": "filter-registry"
+    }
+  ],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Document the pipeline factory extraction pattern: handler factory functions live in src/pipeline.ts with custom interface types, wired into index.ts via 'as any' casts. This trades Pi type-safety for testability. Note that isToolCallEventType/isBashToolResult helpers are not used in the pipeline layer due to this architecture.",
+      "evidence": "extension-entry-point review: src/pipeline.ts uses manual toolName checks instead of Pi helpers; index.ts uses 'as any' casts. AGENTS.md currently says 'Use isToolCallEventType(\"bash\", event) for type narrowing' but the actual codebase diverges from this for testability reasons.",
+      "isSystemic": false
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Add convention for test isolation of module-level mutable state: modules with mutable state arrays (like the filter registry) should export a clearX()/resetX() function for test cleanup. Document the dependency injection pattern (optional last parameter for test overrides, e.g. teeDir, dbPath=':memory:') as the established testing convention.",
+      "evidence": "filter-registry review: ALL_FILTERS has no clear mechanism, tests depend on insertion order. tee-recovery review: uses optional teeDir parameter. sqlite-tracker review: tests create Database(':memory:') directly. All three features use different DI approaches.",
+      "isSystemic": true
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Remove or soften the pi-rtk-worker skill instruction 'Do NOT read IMPLEMENTATION.md'. Feature descriptions reference IMPLEMENTATION.md spec details (schema columns, filter names), making the prohibition contradictory. Workers need IMPLEMENTATION.md for interface definitions and output format specs.",
+      "evidence": "command-matcher and sqlite-tracker reviews both noted workers read IMPLEMENTATION.md despite the skill prohibition, and both produced correct implementations. The feature descriptions reference 'per IMPLEMENTATION.md' explicitly.",
+      "isSystemic": true
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "architecture.md should document the full SQLite pragma set including synchronous=NORMAL",
+      "reason": "The feature spec doesn't require synchronous=NORMAL, and adding undocumented pragmas could cause confusion. If pi-lcm uses it, it should be discussed as a deliberate architecture decision by the orchestrator, not auto-applied."
+    },
+    {
+      "observation": "VAL-CORE-025 is mapped to project-scaffolding but actually implemented in extension-entry-point pipeline",
+      "reason": "This is a feature-to-validation mapping issue in features.json, not a code defect. The assertion IS fulfilled by the codebase. No code change needed."
+    },
+    {
+      "observation": "FilterMatch type not documented in AGENTS.md",
+      "reason": "Already documented in architecture.md under 'Filter System' section. Adding to AGENTS.md would be redundant."
+    },
+    {
+      "observation": "Data-driven pattern for matcher rules should be documented as preferred",
+      "reason": "This is an implementation style choice, not a mandatory convention. Workers can discover it by reading the existing code."
+    },
+    {
+      "observation": ".gitignore missing *.db-wal and *.db-shm for WAL mode sidecar files",
+      "reason": "The .gitignore matches the spec exactly. WAL sidecar files are transient and won't exist in the repo. Adding them would be a cosmetic improvement but not blocking."
+    }
+  ],
+  "previousRound": null
+}

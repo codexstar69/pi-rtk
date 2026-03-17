@@ -1,0 +1,57 @@
+{
+  "featureId": "extension-entry-point",
+  "reviewedAt": "2026-03-17T05:15:00.000Z",
+  "commitId": "c29da92",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Solid implementation of the extension entry point with well-structured pipeline extraction into src/pipeline.ts. All 6 event handlers registered, tool_call/tool_result pipeline works correctly, filter crash recovery, tee on error, status footer under 20 chars, and session lifecycle all properly implemented. 22 integration tests cover all 12 validation assertions. Architecture decision to extract pipeline into a separate module enables clean testing without needing a real ExtensionAPI. Minor non-blocking issues noted below.",
+    "issues": [
+      {
+        "file": "index.ts",
+        "line": 79,
+        "severity": "non_blocking",
+        "description": "createToolResultHandler() is called on every tool_result event (creating a new closure each time). The tool_call handler is created once at line 72. While this has the benefit of picking up newly registered filters dynamically via getFilters(), it's inconsistent with how tool_call is handled and creates unnecessary allocations. Consider creating the handler once and passing filters lazily, or document the intentional asymmetry."
+      },
+      {
+        "file": "src/pipeline.ts",
+        "line": 77,
+        "severity": "non_blocking",
+        "description": "Manual toolName checks (event.toolName === 'bash') instead of using Pi's isToolCallEventType() helper for type narrowing. This is a consequence of the extracted pipeline architecture using custom ToolCallInput types rather than Pi's native types. Functionally correct but diverges from the pattern described in AGENTS.md ('Use isToolCallEventType(\"bash\", event) and isBashToolResult(event) for type narrowing'). The as-any casts in index.ts compensate for this, but reduce type safety."
+      },
+      {
+        "file": "test/integration.test.ts",
+        "line": 437,
+        "severity": "non_blocking",
+        "description": "VAL-CROSS-008 (session lifecycle) and VAL-CROSS-009 (session switch) tests validate state management by directly manipulating state.commandMap.clear() and state.sessionSavings rather than going through the actual session event handlers registered in index.ts. This means the initializeSession(), resetState(), and the session_start/switch/fork/shutdown handler wiring in index.ts are not exercised by integration tests. The handlers could have bugs in their try/catch/reinit logic that would go undetected."
+      },
+      {
+        "file": "test/integration.test.ts",
+        "line": 562,
+        "severity": "non_blocking",
+        "description": "afterEach is imported at the bottom of the file after all test code, relying on ES module import hoisting. Unconventional ordering — all imports should be at the top of the file for readability."
+      },
+      {
+        "file": "index.ts",
+        "line": 78,
+        "severity": "non_blocking",
+        "description": "Multiple 'as any' casts used when registering event handlers (lines 75, 80-81, 85, 97, 106, 115, 124). While pragmatic for avoiding Pi API type mismatches, this removes TypeScript's ability to catch signature errors at compile time. If Pi's event types change, the compiler won't flag incompatibilities."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "AGENTS.md documents using isToolCallEventType() and isBashToolResult() for type narrowing, but the implementation uses manual toolName string checks with 'as any' casts instead. The extracted pipeline pattern (src/pipeline.ts with custom interface types) makes Pi's type narrowing helpers unusable in the pipeline layer. If this pattern is intentional for testability, AGENTS.md should document this deviation and note that as-any casts at the index.ts wiring layer are the accepted approach.",
+      "evidence": "AGENTS.md says: 'Use isToolCallEventType(\"bash\", event) and isBashToolResult(event) for type narrowing'. But src/pipeline.ts:77 does event.toolName === \"bash\" and index.ts:75 uses (event: any). IMPLEMENTATION.md appendix A also shows the isToolCallEventType pattern."
+    },
+    {
+      "area": "conventions",
+      "observation": "The extracted pipeline pattern (creating handler factory functions in a separate module for testability, wired into index.ts) is a significant architectural decision that isn't documented in AGENTS.md or architecture.md. Future workers implementing filters or modifying the pipeline need to know about this separation.",
+      "evidence": "src/pipeline.ts is a new module containing createToolCallHandler/createToolResultHandler/updateStatusFooter. index.ts imports and wires these. architecture.md only documents the closure-based state pattern, not the extracted handler factory pattern."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "PASS. The extension entry point implementation is correct and complete. All 6 event handlers are registered (tool_call, tool_result, session_start, session_switch, session_fork, session_shutdown). The tool_result pipeline correctly extracts text, matches filters, applies them with crash recovery, tracks savings, handles tee on error, and updates the status footer. 22 integration tests cover all 12 validation assertions (VAL-CORE-001/002/003/020/028, VAL-CROSS-001/002/006/007/008/009/010). Non-blocking issues include: handler recreation on every tool_result call, manual type narrowing instead of Pi helpers, shallow session lifecycle tests that don't exercise the actual event handler wiring, and bottom-of-file afterEach import. None of these affect correctness."
+}

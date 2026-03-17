@@ -1,0 +1,45 @@
+{
+  "featureId": "tee-recovery",
+  "reviewedAt": "2026-03-17T10:45:00.000Z",
+  "commitId": "c69138d",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Clean, well-structured implementation. saveTee correctly writes raw output to timestamped files with rotation and truncation. getTeeHint produces the expected bracket format. Tests are comprehensive with 19 cases covering all validation assertions. Three non-blocking observations noted below.",
+    "issues": [
+      {
+        "file": "src/tee.ts",
+        "line": 39,
+        "severity": "non_blocking",
+        "description": "Filename collision risk: generateFilename uses second-level timestamp precision. Two calls in the same second for the same command will produce identical filenames, causing silent overwrite. Consider adding a counter suffix or milliseconds to the timestamp. Low practical risk since tee is typically called once per tool_result."
+      },
+      {
+        "file": "src/tee.ts",
+        "line": 102,
+        "severity": "non_blocking",
+        "description": "maxFileSize comparison uses string character length (rawOutput.length) rather than byte length (Buffer.byteLength). For multi-byte UTF-8 content (unicode, CJK), the file on disk could exceed maxFileSize in bytes while respecting the character limit. Acceptable for a recovery feature, but worth documenting."
+      },
+      {
+        "file": "test/tee.test.ts",
+        "line": 128,
+        "severity": "non_blocking",
+        "description": "Misleading comment 'Use a small delay to ensure different timestamps in filenames' — there is no actual delay. The test works because different command slugs (cmd-0, cmd-1, cmd-2) produce different filenames, not because of timestamp differences. The comment should be corrected to avoid confusion."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "Worker used synchronous fs operations (readFileSync, writeFileSync, mkdirSync, readdirSync, unlinkSync) consistently. AGENTS.md states 'Filters are synchronous (no async)' but doesn't clarify whether non-filter utility modules like tee should also be sync. Since tee runs in the tool_result hot path, sync is reasonable for simplicity, but async could prevent blocking on slow I/O. This convention should be explicitly documented.",
+      "evidence": "src/tee.ts uses fs.mkdirSync (line 97), fs.writeFileSync (line 109), fs.readdirSync (line 68), fs.unlinkSync (line 79)"
+    },
+    {
+      "area": "conventions",
+      "observation": "The tee module uses a testable design via the optional teeDir parameter for dependency injection. This pattern (optional last parameter for test overrides) is consistent across the codebase (e.g., SQLite uses ':memory:') but isn't documented in AGENTS.md as an established convention.",
+      "evidence": "src/tee.ts:93 — teeDir: string = DEFAULT_TEE_DIR parameter, tests pass temp dirs"
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The tee-recovery feature passes review. Implementation is clean, correctly fulfills VAL-CORE-017 (saves raw output to timestamped files), VAL-CORE-018 (rotation at maxFiles, truncation at maxFileSize), and VAL-CORE-019 (hint format [full output: <path>]). Tests cover file creation, content matching, unicode preservation, empty output, filename format/sanitization, rotation (including maxFiles=1 edge case), truncation, and hint format — 19 tests total. Three non-blocking issues noted: potential filename collision at sub-second granularity, maxFileSize comparing character count vs byte count, and a misleading test comment. No blocking issues found."
+}
