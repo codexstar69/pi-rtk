@@ -25,6 +25,7 @@ import { createDockerListFilter, createDockerLogsFilter } from "./docker.js";
 import { createNpmInstallFilter, createPipInstallFilter } from "./npm-install.js";
 import { createHttpFilter } from "./http.js";
 import { createReadFilter } from "./read-filter.js";
+import { createLogDedupFilter } from "./log-dedup.js";
 
 /** Result returned by every filter's apply(). */
 export interface FilterResult {
@@ -72,6 +73,7 @@ const ALL_FILTERS: Filter[] = [
   createNpmInstallFilter(),
   createPipInstallFilter(),
   createReadFilter(),
+  createLogDedupFilter(),
   createHttpFilter(),
 ];
 
