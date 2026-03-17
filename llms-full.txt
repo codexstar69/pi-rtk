@@ -1,0 +1,342 @@
+# pi-rtk -- Full Reference
+
+> Token Killer for Pi -- reduce LLM token consumption by 60-90% on common dev commands.
+
+## Overview
+
+pi-rtk is a Pi extension that hooks into `tool_call` and `tool_result` events to filter command output before the LLM sees it. It runs 22 filter modules that match commands by pattern and compress their output using strategies like grouping, truncation, deduplication, schema extraction, and summary extraction.
+
+Pure TypeScript, ESM, no binary dependency. Uses better-sqlite3 for analytics tracking.
+
+## Install
+
+```
+pi install npm:pi-rtk
+```
+
+## Architecture
+
+### Pipeline
+
+1. `tool_call` fires: RTK stores `{command, toolName}` in a Map keyed by `toolCallId`
+2. Tool executes (bash or read)
+3. `tool_result` fires: RTK extracts text, retrieves tracked command, checks shouldFilter(), finds matching filter, applies it, tracks savings in SQLite, updates status footer, returns compressed output
+4. If filter throws: raw output passes through unchanged (crash safety)
+
+### Entry Point (index.ts)
+
+Exports a default function receiving `ExtensionAPI`. Wires:
+- `tool_call` -> stores command by toolCallId
+- `tool_result` -> pipeline filter/track/return
+- `session_start` -> init SQLite, tracker
+- `session_switch` / `session_fork` -> reset + reinit
+- `session_shutdown` -> flush + close DB
+- `pi.registerCommand("rtk")` -> gain/discover/settings subcommands
+
+### Pipeline Logic (src/pipeline.ts)
+
+Shared state: `PipelineState { commandMap, tracker, config, sessionSavings, debugMode }`
+
+tool_result handler steps:
+1. Extract text from content blocks
+2. Retrieve tracked command by toolCallId
+3. Check shouldFilter (skip pipes, chaining, redirects, subshells)
+4. Check excludeCommands patterns
+5. Check minOutputChars threshold (default: 100)
+6. Check for binary output (null bytes)
+7. Strip ANSI escape codes
+8. Extract base command (strip env var prefixes)
+9. Find matching filter (first match wins, respecting config enable/disable)
+10. Apply filter (catch errors -> passthrough)
+11. Track savings in SQLite
+12. If error + tee enabled: save raw output, append hint path
+13. Update status footer
+14. Return modified content
+
+### Filter Interface
+
+```typescript
+interface Filter {
+  name: string;
+  matches(command: string): boolean;
+  apply(command: string, rawOutput: string): FilterResult;
+}
+
+interface FilterResult {
+  filtered: string;
+  rawChars: number;
+  filteredChars: number;
+}
+```
+
+### Filter Registry (src/filters/index.ts)
+
+22 filters registered in priority order (first match wins):
+
+1. git-status
+2. git-diff
+3. git-log
+4. git-action
+5. git-branch
+6. ls
+7. test-js
+8. test-py
+9. test-rs
+10. test-go
+11. lint-tsc
+12. lint-js
+13. lint-py
+14. lint-rs
+15. grep
+16. json-schema
+17. docker-list
+18. docker-logs
+19. npm-install
+20. pip-install
+21. read-filter
+22. log-dedup
+23. http
+
+## Filter Details
+
+### git-status
+- **Matches**: `git status`
+- **Strategy**: Parse branch info, group files by status (staged/modified/untracked/deleted), emoji annotations
+- **Output**: `📌 branch (tracking) \n ✅ Staged: N files \n file1 file2 \n 📝 Modified: N files ...`
+- **Savings**: ~87%
+
+### git-diff
+- **Matches**: `git diff`
+- **Strategy**: Stat summary at top, compact hunks with file:line headers, 1 context line, truncate hunks >20 lines, skip binary files
+- **Output**: `file | changes +++--- \n @@ file:line @@ \n changes... \n N files changed, ins insertions(+), del deletions(-)`
+- **Savings**: ~80%
+
+### git-log
+- **Matches**: `git log`
+- **Strategy**: Oneline format, max 20 commits, 80-char subject truncation
+- **Output**: `sha7 subject line`
+- **Savings**: ~92%
+
+### git-action
+- **Matches**: `git push`, `git pull`, `git fetch`, `git add`, `git commit`
+- **Strategy**: Single summary line, strip progress/enumeration output
+- **Output**: `ok ✓ action: summary`
+- **Savings**: ~95%
+
+### git-branch
+- **Matches**: `git branch`
+- **Strategy**: Compact list with current branch marker, truncation at 50+
+- **Savings**: ~75%
+
+### ls
+- **Matches**: `ls`, `find`, `fd`, `tree`, `eza`, `exa`
+- **Strategy**: Group files by directory, hide noise dirs (node_modules, .git, target, etc.), human-readable sizes, extension breakdown summary
+- **Output**: `dir/ (N files) \n file size \n 📊 N files, N dirs (ext breakdown)`
+- **Savings**: ~80%
+
+### test-js
+- **Matches**: `bun test`, `vitest`, `jest`, `npm test`, `pnpm test`
+- **Strategy**: Extract pass/fail/skip counts + duration. On failure: keep test name + first error line, strip stack traces
+- **Output (pass)**: `✓ N suites, N tests passed (duration)`
+- **Output (fail)**: `✗ N passed, N failed \n FAILED: \n test name -- error`
+- **Savings**: ~95%
+
+### test-py
+- **Matches**: `pytest`, `python -m pytest`
+- **Strategy**: Same as test-js but parses pytest output format
+- **Savings**: ~90%
+
+### test-rs
+- **Matches**: `cargo test`
+- **Strategy**: Same pattern, parses cargo test output
+- **Savings**: ~85%
+
+### test-go
+- **Matches**: `go test`
+- **Strategy**: Same pattern, parses go test output
+- **Savings**: ~85%
+
+### lint-tsc
+- **Matches**: `tsc`, `bunx tsc`
+- **Strategy**: Group errors by TS error code, cap at 5 per code, strip suggestions
+- **Output**: `TS2345 (N errors) \n file:line -- message \n ... \n N errors in N files`
+- **Savings**: ~87%
+
+### lint-js
+- **Matches**: `eslint`, `biome`
+- **Strategy**: Group by rule name, cap at 5, strip "Did you mean" lines
+- **Savings**: ~70%
+
+### lint-py
+- **Matches**: `ruff`
+- **Strategy**: Group by rule code, cap at 5, strip help suggestions
+- **Savings**: ~75%
+
+### lint-rs
+- **Matches**: `cargo clippy`, `cargo build`
+- **Strategy**: Group warnings/errors by lint name, cap at 5, strip help suggestions
+- **Savings**: ~80%
+
+### grep
+- **Matches**: `rg`, `grep`
+- **Strategy**: Group results by file, max 5 matches per file, max 20 files, dedup identical lines, skip context-only lines
+- **Output**: `file: \n line: match \n ... \n N matches in N files`
+- **Savings**: ~84%
+
+### json-schema
+- **Matches**: JSON file reads (output starts with `{` or `[`, valid JSON, >2000 chars)
+- **Strategy**: Replace values with type names, collapse large arrays/objects, max depth 3
+- **Output**: `{ "key": "string", "nested": "{ N keys }" }`
+- **Savings**: ~93%
+
+### docker-list
+- **Matches**: `docker ps`, `docker images`
+- **Strategy**: Compact table with short container IDs, no full SHA
+- **Savings**: ~80%
+
+### docker-logs
+- **Matches**: `docker logs`
+- **Strategy**: Delegates to log-dedup for line collapsing
+- **Savings**: ~90%
+
+### npm-install
+- **Matches**: `bun install`, `npm install`, `pnpm install`, `yarn install`
+- **Strategy**: Single summary line, preserve vulnerability warnings
+- **Output**: `ok ✓ N packages installed (duration)`
+- **Savings**: ~90%
+
+### pip-install
+- **Matches**: `pip install`
+- **Strategy**: Same as npm-install
+- **Savings**: ~90%
+
+### read-filter
+- **Matches**: File reads via `read` tool (by file extension)
+- **Strategy**: Strip single-line and multi-line comments per language, preserve doc comments (`///`, `/** */`, triple-quote docstrings), normalize blank lines. Only for files >5000 chars.
+- **Languages**: .ts/.js/.tsx/.jsx, .py, .rs, .go, .rb, .sh/.bash/.zsh, .yaml/.yml, .toml, .css/.scss, .html/.vue/.svelte, .sql
+- **Savings**: ~60%
+
+### log-dedup
+- **Matches**: Any output with >50 lines containing duplicates
+- **Strategy**: Collapse consecutive identical lines into one + (xN) suffix. Also collapses same-message lines with different timestamps.
+- **Output**: `unique line \n repeated line (x47) \n ... \n N unique lines (N total, N collapsed)`
+- **Savings**: ~70%
+
+### http
+- **Matches**: `curl`, `wget`, `xh`, `http`
+- **Strategy**: Extract HTTP status code + brief response body summary
+- **Savings**: ~80%
+
+## Configuration
+
+### Resolution Order
+
+1. Environment variables (highest priority)
+2. Project settings: `.pi/settings.json` in cwd
+3. Global settings: `~/.pi/agent/settings.json`
+4. Defaults (lowest priority)
+
+### Settings Schema
+
+```json
+{
+  "rtk": {
+    "enabled": true,
+    "filters": {
+      "git": true,
+      "ls": true,
+      "test": true,
+      "lint": true,
+      "grep": true,
+      "json": true,
+      "docker": true,
+      "npm": true,
+      "read": true,
+      "logDedup": true,
+      "http": true
+    },
+    "tee": {
+      "enabled": true,
+      "mode": "failures",
+      "maxFiles": 20,
+      "maxFileSize": 1048576
+    },
+    "minOutputChars": 100,
+    "excludeCommands": [],
+    "debugMode": false
+  }
+}
+```
+
+### Filter Groups
+
+Filters are grouped for config purposes. Disabling a group disables all filters in it:
+
+| Group | Filters |
+|-------|---------|
+| `git` | git-status, git-diff, git-log, git-action, git-branch |
+| `ls` | ls (handles ls, find, fd, tree, eza) |
+| `test` | test-js, test-py, test-rs, test-go |
+| `lint` | lint-tsc, lint-js, lint-py, lint-rs |
+| `grep` | grep |
+| `json` | json-schema |
+| `docker` | docker-list, docker-logs |
+| `npm` | npm-install, pip-install |
+| `read` | read-filter |
+| `logDedup` | log-dedup |
+| `http` | http |
+
+### Environment Variables
+
+- `RTK_ENABLED` -- master switch (0/1)
+- `RTK_FILTER_{GROUP}` -- per-group toggle (e.g., `RTK_FILTER_GIT=0`)
+- `RTK_TEE_ENABLED` -- tee recovery (0/1)
+- `RTK_TEE_MAX_FILES` -- max tee files
+- `RTK_TEE_MAX_FILE_SIZE` -- max file size in bytes
+- `RTK_MIN_OUTPUT_CHARS` -- min chars to trigger filtering
+- `RTK_DEBUG` -- debug mode (0/1)
+
+## Commands
+
+### /rtk gain [period]
+
+Analytics dashboard with per-filter breakdown table, bar charts, and session savings.
+
+Periods: `24h`, `7d`, `30d`, `all` (default).
+
+### /rtk discover
+
+Finds unfiltered commands and estimates potential savings using typical filter ratios.
+
+### /rtk settings
+
+TUI overlay panel for toggling filters, configuring tee, switching project/global scope.
+
+## Tee Recovery
+
+When `tee.enabled` is true and `tee.mode` is `"failures"`:
+- On command error (isError=true): save raw output to `~/.pi/agent/rtk/tee/`
+- Filename format: `YYYY-MM-DD_HHMMSS_command-slug.txt`
+- Max files rotated (oldest deleted), max file size truncated
+- Hint appended to filtered output: `[full output: /path/to/file.txt]`
+
+## SQLite Schema
+
+Database at `~/.pi/agent/rtk/rtk.db` (WAL mode, busy_timeout=5000).
+
+### command_runs table
+- id, command, filter_name, raw_chars, filt_chars, raw_tokens, filt_tokens, savings_pct, duration_ms, timestamp, session_id, cwd
+
+### unfiltered_commands table
+- id, command, char_count, timestamp
+
+## Dependencies
+
+- `better-sqlite3` -- SQLite for analytics
+- Peer: `@mariozechner/pi-ai`, `@mariozechner/pi-coding-agent`, `@sinclair/typebox`
+
+## Source
+
+- Repository: https://github.com/codexstar69/pi-rtk
+- License: MIT
+- 59 TypeScript files, 24 test files

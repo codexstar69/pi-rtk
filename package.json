@@ -1,15 +1,45 @@
 {
   "name": "pi-rtk",
   "version": "0.1.0",
-  "description": "Token Killer for Pi",
+  "description": "Token Killer for Pi -- reduce LLM token consumption by 60-90% on common dev commands",
   "type": "module",
   "license": "MIT",
-  "keywords": ["pi-package", "pi-extension"],
+  "author": "codexstar69 <engazedigital@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codexstar69/pi-rtk.git"
+  },
+  "homepage": "https://github.com/codexstar69/pi-rtk#readme",
+  "bugs": {
+    "url": "https://github.com/codexstar69/pi-rtk/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "token-optimization",
+    "llm",
+    "ai-agent",
+    "developer-tools",
+    "cli",
+    "output-filter",
+    "token-reduction",
+    "git",
+    "test-runner",
+    "linter",
+    "sqlite",
+    "analytics",
+    "context-window",
+    "coding-agent"
+  ],
   "files": ["index.ts", "src/**/*.ts"],
   "pi": { "extensions": ["./index.ts"] },
   "scripts": {
     "test": "vitest run --dir test",
     "test:watch": "vitest --dir test",
+    "typecheck": "tsc --noEmit",
     "prepublishOnly": "vitest run --dir test"
   },
   "dependencies": { "better-sqlite3": "^11.9.1" },

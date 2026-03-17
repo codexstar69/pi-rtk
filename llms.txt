@@ -1,0 +1,26 @@
+# pi-rtk
+
+> Token Killer for Pi -- reduce LLM token consumption by 60-90% on common dev commands.
+
+Pi extension that intercepts tool_call/tool_result hooks and compresses output before the LLM sees it. 22 filter modules, SQLite analytics, tee recovery, TUI settings panel.
+
+## Docs
+
+- [README](https://github.com/codexstar69/pi-rtk/blob/main/README.md): Install, quick start, configuration, commands
+- [Full Reference](https://github.com/codexstar69/pi-rtk/blob/main/llms-full.txt): Architecture, all filters, API, config options
+- [Contributing](https://github.com/codexstar69/pi-rtk/blob/main/CONTRIBUTING.md): Dev setup, testing, PR guidelines
+- [Changelog](https://github.com/codexstar69/pi-rtk/blob/main/CHANGELOG.md): Version history
+
+## Install
+
+```
+pi install npm:pi-rtk
+```
+
+## Key Concepts
+
+- **Filters**: 22 modules that match commands and compress output (git, ls, test, lint, grep, JSON, docker, npm, read, log-dedup, http)
+- **Pipeline**: tool_call stores command -> tool_result matches filter -> apply -> track savings -> return compressed
+- **Analytics**: SQLite tracks raw/filtered tokens per command. `/rtk gain` shows dashboard.
+- **Tee**: Raw output saved to disk on command failure for recovery.
+- **Config**: env vars > settings.json > defaults. Toggle filter groups individually.
