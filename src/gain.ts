@@ -196,7 +196,7 @@ export function formatGainOutput(db: Database.Database, options: GainOptions): s
   lines.push(fmtRow(colCommand, colRuns, colRaw, colFiltered, colSaved, ""));
 
   // Separator
-  const sepLen = commandW + runsW + rawW + filtW + savedW + BAR_WIDTH + 12; // 12 = 6 * 2-char gaps
+  const sepLen = commandW + runsW + rawW + filtW + savedW + BAR_WIDTH + 10; // 5 × 2-char gaps
   lines.push("─".repeat(sepLen));
 
   // Data rows

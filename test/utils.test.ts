@@ -182,6 +182,18 @@ describe("shouldFilter", () => {
     expect(shouldFilter("echo hello >> file.txt")).toBe(false);
   });
 
+  it("returns true when > is inside double quotes (not a real redirect)", () => {
+    expect(shouldFilter('echo "2 > 1"')).toBe(true);
+  });
+
+  it("returns true when > is inside single quotes (not a real redirect)", () => {
+    expect(shouldFilter("git log --format='>%s'")).toBe(true);
+  });
+
+  it("returns false for real redirect outside quotes", () => {
+    expect(shouldFilter("echo hello > file.txt")).toBe(false);
+  });
+
   it("returns false for subshells with $()", () => {
     expect(shouldFilter("echo $(date)")).toBe(false);
   });

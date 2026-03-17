@@ -96,6 +96,28 @@ describe("gain table format", () => {
     expect(output).toMatch(/─+/);
   });
 
+  it("separator line length matches header/data row lengths", () => {
+    seedData();
+    const output = formatGainOutput(db, { period: "all", sessionSavings: 0 });
+    const lines = output.split("\n");
+
+    // Find separator lines (all ─ characters)
+    const sepLines = lines.filter((l) => /^─+$/.test(l));
+    expect(sepLines.length).toBeGreaterThanOrEqual(1);
+
+    // Find the header row (contains "Command")
+    const headerLine = lines.find((l) => l.includes("Command") && l.includes("Runs"));
+    expect(headerLine).toBeDefined();
+
+    // The separator should be at least as long as the header (header has no bar)
+    // Data rows with a bar should match separator length
+    const sepLen = sepLines[0]!.length;
+    const dataLines = lines.filter((l) => /[█░]/.test(l));
+    for (const dl of dataLines) {
+      expect(dl.length).toBe(sepLen);
+    }
+  });
+
   it("shows bar chart characters for each command", () => {
     seedData();
     const output = formatGainOutput(db, { period: "all", sessionSavings: 0 });

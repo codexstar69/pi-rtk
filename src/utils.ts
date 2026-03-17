@@ -40,8 +40,9 @@ export function shouldFilter(command: string): boolean {
   // Chained commands
   if (/&&|\|\||;/.test(command)) return false;
 
-  // Redirects
-  if (/>/.test(command)) return false;
+  // Redirects — check for > outside of quotes
+  const unquoted = command.replace(/"[^"]*"|'[^']*'/g, "");
+  if (/>/.test(unquoted)) return false;
 
   // Subshells
   if (/\$\(/.test(command) || /`/.test(command)) return false;

@@ -1,0 +1,110 @@
+{
+  "verdicts": [
+    {
+      "bugId": "BUG-1",
+      "source": "hunter-critical",
+      "verdict": "REAL_BUG",
+      "severity": "Medium",
+      "confidence": 78,
+      "reasoning": "Confirmed. readJsonFile (src/settings.ts:28-33) returns {} on any catch, including JSON.parse errors. saveSettings (line 74) reads via readJsonFile, gets {}, sets settings['rtk'] = config, writes back only {\"rtk\": ...}. This destroys all other keys in settings.json. The atomic write protects against write-corruption but not read-of-corrupted-file. However, the trigger requires settings.json to already be corrupted (partial write by another process, manual edit error), which is an edge case — not a normal runtime path. Downgrading from the hunter's implied Critical to Medium: data loss is real but requires a pre-existing corruption condition."
+    },
+    {
+      "bugId": "BUG-2",
+      "source": "hunter-critical",
+      "verdict": "NOT_A_BUG",
+      "severity": "Low",
+      "confidence": 82,
+      "reasoning": "The leak mechanism is technically real — if a tool_call has no matching tool_result, the entry persists. But examining the code: (1) state.commandMap.clear() is called in initializeSession() and resetState(), both of which run on session_start, session_switch, session_fork, session_shutdown — every session boundary. (2) The Pi agent protocol guarantees a tool_result for every tool_call. (3) Each leaked entry is ~100 bytes (two short strings). Even if a few entries leaked during a session, the Map is cleared at every session boundary. This is not a practical bug — it's a theoretical concern with negligible real-world impact. The Skeptic's downgrade to Informational is correct."
+    },
+    {
+      "bugId": "BUG-3",
+      "source": "hunter-critical",
+      "verdict": "NOT_A_BUG",
+      "severity": "Low",
+      "confidence": 85,
+      "reasoning": "The filename uses second-precision timestamps. For an overwrite to occur: (1) the same command must error twice within the same wall-clock second, (2) both must pass through filtering with tee enabled. Looking at the pipeline (pipeline.ts), tool_result events are processed sequentially. The same command cannot produce two tool_results in the same second under normal operation. Even if it somehow did, the overwrite only affects a diagnostic tee file (not critical data), replacing one error dump with another from the same command. The hunter's own confidence was 65%, below useful threshold. Not a practical bug."
+    },
+    {
+      "bugId": "BUG-4",
+      "source": "hunter-critical",
+      "verdict": "NOT_A_BUG",
+      "severity": "Low",
+      "confidence": 80,
+      "reasoning": "The singleton caching pattern in openDb (connection.ts:14-36) does ignore the dbPath argument on subsequent calls if db is already set. However: (1) closeDb() sets db = null, resetting the singleton. (2) In production flow, initializeSession() calls openDb() (default path) as the first database access. (3) resetState() calls closeDb() between sessions. (4) No production code calls openDb(':memory:') — that's a test-only path. The hunter's scenario ('any plugin or test that opens a connection first') is about test code, not production runtime. The singleton-with-different-args is a code smell but not a production bug. The Skeptic correctly identified this as Informational."
+    },
+    {
+      "bugId": "BUG-1",
+      "source": "hunter-medium-core",
+      "verdict": "REAL_BUG",
+      "severity": "Low",
+      "confidence": 95,
+      "reasoning": "Confirmed by reading gain.ts lines 140-152. fmtRow joins 6 columns with '  ' (2-char separator). Array.join on 6 elements produces 5 separators, not 6. So gap chars = 5 × 2 = 10. But sepLen uses 12, claiming '6 * 2-char gaps'. The separator line is 2 characters wider than the data rows. This is a real but purely cosmetic display bug — the separator extends 2 chars beyond the table."
+    },
+    {
+      "bugId": "BUG-2",
+      "source": "hunter-medium-core",
+      "verdict": "REAL_BUG",
+      "severity": "Low",
+      "confidence": 80,
+      "reasoning": "Confirmed. src/utils.ts line 40: `if (/>/.test(command)) return false;` matches '>' anywhere in the string, including inside quoted arguments. Commands like `echo \"2 > 1\"` or `git log --format=\">%s\"` would incorrectly bypass filtering. However, the impact is limited: these commands merely miss a token-saving optimization (shouldFilter returns false = skip filtering = passthrough). No data corruption or errors. Real bug, but Low severity since it only causes a missed optimization opportunity."
+    },
+    {
+      "bugId": "BUG-1",
+      "source": "hunter-medium-filters",
+      "verdict": "REAL_BUG",
+      "severity": "Medium",
+      "confidence": 92,
+      "reasoning": "Confirmed by reading stripCStyle in read-filter.ts:124-156. The string scanning loop for backtick/quote literals exits at end-of-line (while j < line.length) with no cross-line state tracking. Block comment state (inBlockComment/isDocBlock) IS tracked across lines, but string literal state is NOT. A multi-line template literal like `const html = `\\n  <div> // content </div>\\n`;` — on the continuation line, `// content </div>` would be stripped as a comment. This corrupts file content. The MIN_CHARS=5000 threshold means it only affects larger files, but it's still a real content corruption bug."
+    },
+    {
+      "bugId": "BUG-2",
+      "source": "hunter-medium-filters",
+      "verdict": "REAL_BUG",
+      "severity": "Medium",
+      "confidence": 88,
+      "reasoning": "Confirmed. stripHash (read-filter.ts:180-218) uses backslash-escape semantics for both single and double quotes. YAML single-quoted strings escape quotes by doubling (''), not with backslash. Input `key: 'it''s a value # not a comment'` — the scanner hits the first ' after 'it', treats it as string-closing (since '' is not recognized as escape), then strips `# not a comment` as a hash comment. This corrupts YAML content when the read-filter processes .yaml/.yml files > 5000 chars."
+    },
+    {
+      "bugId": "BUG-3",
+      "source": "hunter-medium-filters",
+      "verdict": "REAL_BUG",
+      "severity": "Medium",
+      "confidence": 85,
+      "reasoning": "Confirmed. LANGUAGE_MAP maps '.toml' to { style: 'hash' }, so stripHash is used. stripHash handles single-char quotes ('\"' and \"'\") but not TOML's triple-quoted multi-line strings (\"\"\"...\"\"\" and '''...'). A # inside a TOML multi-line string would be stripped as a comment. The codebase already has triple-quote handling in stripPython, proving awareness of the pattern but failing to apply it for TOML. Real content corruption bug for TOML files > 5000 chars."
+    },
+    {
+      "bugId": "BUG-4",
+      "source": "hunter-medium-filters",
+      "verdict": "REAL_BUG",
+      "severity": "Medium",
+      "confidence": 90,
+      "reasoning": "Confirmed by tracing parseMatches in grep.ts:63-90. Context lines from `rg -C/-B/-A` use '-' as separator (e.g., `src/config.ts-11-host: localhost`). This does NOT match the vimgrep or standard patterns (which require ':' after digits). It falls through to the noLineNum fallback: regex `^(.+?):(.+)$` matches at the first colon in the TEXT portion → file='src/config.ts-11-host', text=' localhost'. Guard passes: 'src/config.ts-11-host' contains '/' and '.', and is not all digits. This creates false matches with mangled filenames. Any use of rg with context flags on code containing colons (YAML, TypeScript types, JSON-like content) triggers this."
+    },
+    {
+      "bugId": "BUG-5",
+      "source": "hunter-medium-filters",
+      "verdict": "REAL_BUG",
+      "severity": "Low",
+      "confidence": 82,
+      "reasoning": "Confirmed. stripCStyle treats backtick as a simple open/close delimiter identical to single/double quotes. JS template literals support ${...} expressions that can contain nested backticks. `const x = `value: ${map.get(`key`)}`;` — the inner backtick inside get() is treated as closing the outer template literal, causing the rest of the line to be misparsed. However, this is a subset/variant of filter-BUG-1 (which covers the broader multi-line issue). Both are real but this single-line nested-backtick variant is less likely in practice than the multi-line case. Downgrading to Low since it requires a specific nesting pattern and the multi-line bug (BUG-1) is the more impactful issue."
+    },
+    {
+      "bugId": "BUG-6",
+      "source": "hunter-medium-filters",
+      "verdict": "REAL_BUG",
+      "severity": "Low",
+      "confidence": 78,
+      "reasoning": "Confirmed. grep.ts lines 131-145: overflow is calculated as `matches.length - MAX_MATCHES_PER_FILE`. But `shown` may be less than MAX_MATCHES_PER_FILE due to dedup skipping. If a file has 7 matches but 3 were deduped (shown=2), overflow = 7-5 = 2, but only 2 lines were displayed, so 5 remain undisplayed. The overflow count is incorrect. However, the total summary line (`N matches in N files`) still shows the correct overall count. This is a cosmetic bug in the per-file overflow indicator — it can both understate and overstate the hidden match count depending on dedup behavior."
+    }
+  ],
+  "summary": {
+    "totalReviewed": 12,
+    "realBugs": 9,
+    "notBugs": 3,
+    "bySeverity": {
+      "Critical": 0,
+      "Medium": 5,
+      "Low": 4
+    }
+  }
+}

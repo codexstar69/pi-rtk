@@ -1,0 +1,88 @@
+[
+  {
+    "bugId": "BUG-1",
+    "source": "hunter-critical",
+    "verdict": "ACCEPT",
+    "reasoning": "Confirmed. readJsonFile (line 28-33) returns {} on any JSON.parse error. saveSettings (line 74) calls readJsonFile, gets {}, sets settings['rtk'] = config, and writes back only {\"rtk\": ...}. The atomic write mechanism (temp+rename) protects against write corruption but NOT against read-of-already-corrupt files. If another process or a crash corrupts settings.json, all non-RTK keys are permanently destroyed.",
+    "codeQuote": "const settings = readJsonFile(settingsPath);\nsettings[SETTINGS_KEY] = config;\n// ... writes settings back"
+  },
+  {
+    "bugId": "BUG-2",
+    "source": "hunter-critical",
+    "verdict": "DOWNGRADE",
+    "newSeverity": "Informational",
+    "reasoning": "The leak mechanism is technically correct — if a tool_call has no matching tool_result, the Map entry persists. However, in practice: (1) the Pi agent always emits tool_result for every tool_call even on abort/cancel (this is part of the agent protocol contract — the agent runtime guarantees a tool_result for every tool_call); (2) commandMap.clear() is called on session_start, session_switch, session_fork, and session_shutdown (lines in index.ts); (3) even if a few entries leaked, each entry is ~100 bytes (two short strings), and sessions rarely have thousands of cancelled tool calls. The theoretical leak exists but the practical impact is negligible — the Map is cleared at every session boundary. This is informational at best, not Low severity.",
+    "codeQuote": "state.commandMap.clear(); // called in initializeSession() and resetState()"
+  },
+  {
+    "bugId": "BUG-3",
+    "source": "hunter-critical",
+    "verdict": "DISPROVE",
+    "reasoning": "The claimed trigger requires: (1) same command runs twice within the same wall-clock second, (2) both runs trigger an error, (3) both errors pass through filtering with tee enabled. This is astronomically unlikely in practice because: (a) tee saving only happens in the tool_result handler when event.isError is true AND the filter matched AND tee is enabled; (b) tool calls are sequential per session — the Pi agent doesn't execute the same bash command twice simultaneously within one second; (c) even if it did, the slugify truncates to 40 chars, but the full timestamp (YYYYMMDD_HHMMSS) differentiates by second, making same-second same-command collisions require truly simultaneous execution. The confidence score of 65% is below the 67% threshold for disproval, but more importantly, this is not a real bug — it's an impossibly rare theoretical file overwrite of a diagnostic tee file (not critical data). The overwrite merely replaces one error dump with another of the same command.",
+    "codeQuote": "function generateFilename(command: string): string {\n  const now = new Date();\n  // ... returns `${date}_${time}_${slug}.txt`;\n}"
+  },
+  {
+    "bugId": "BUG-4",
+    "source": "hunter-critical",
+    "verdict": "DOWNGRADE",
+    "newSeverity": "Informational",
+    "reasoning": "The singleton pattern does cache the first connection regardless of dbPath. However, closeDb() sets db = null, allowing a fresh openDb() call. In the actual production flow: (1) index.ts session_start calls initializeSession → openDb() with no argument (default path); (2) resetState() calls closeDb() which nullifies the singleton; (3) no production code path calls openDb(':memory:') before session_start. The hunter's claim 'any plugin or test that opens a connection first corrupts the singleton' is about test code, not production runtime. Tests should (and do) call closeDb() in teardown. The singleton-with-different-args anti-pattern is a code smell, not a runtime bug in production.",
+    "codeQuote": "export function closeDb(): void {\n  if (!db) return;\n  // ... checkpoint and close\n  db = null;\n}"
+  },
+  {
+    "bugId": "BUG-1",
+    "source": "hunter-medium-core",
+    "verdict": "ACCEPT",
+    "reasoning": "Confirmed by code analysis. fmtRow joins 6 columns with '  ' (2-char gap). Array.join on 6 elements produces 5 gaps, not 6. So total gap chars = 5 × 2 = 10, not 12. The separator line (─.repeat(sepLen)) is 2 characters wider than the actual data rows. The comment '12 = 6 * 2-char gaps' is mathematically wrong — it should be '10 = 5 * 2-char gaps'. This is a cosmetic display bug but is real.",
+    "codeQuote": "const sepLen = commandW + runsW + rawW + filtW + savedW + BAR_WIDTH + 12; // 12 = 6 * 2-char gaps\n// But fmtRow joins 6 columns → 5 gaps × 2 = 10 chars, not 12"
+  },
+  {
+    "bugId": "BUG-2",
+    "source": "hunter-medium-core",
+    "verdict": "ACCEPT",
+    "reasoning": "Confirmed. The regex />/.test(command) at line 40 of utils.ts matches '>' anywhere in the command string, including inside quoted arguments. Commands like `echo \"2 > 1\"` or `git log --format=\">%s\"` would return false from shouldFilter, causing them to bypass filtering when they should be filtered. The function doesn't parse shell quoting — it uses a simple regex. However, the practical impact is limited: these commands miss a token-saving opportunity but don't cause data corruption or errors. The severity is correctly Low.",
+    "codeQuote": "if (/>/.test(command)) return false;"
+  },
+  {
+    "bugId": "BUG-1",
+    "source": "hunter-medium-filters",
+    "verdict": "ACCEPT",
+    "reasoning": "Confirmed. stripCStyle processes each line independently. The string scanning loop (while j < line.length) exits at end-of-line without setting any cross-line state for backtick template literals. A multi-line template literal like `const html = `\\n  <div> // some content </div>\\n`;` — on the continuation line, the scanner starts fresh with j=0, not knowing it's inside a backtick string, and strips '// some content </div>' as a comment. The block comment state (inBlockComment/isDocBlock) IS tracked across lines, but string literal state is NOT.",
+    "codeQuote": "if (ch === '\"' || ch === \"'\" || ch === '`') {\n  const quote = ch;\n  // ... while (j < line.length) — exits at end of line, no cross-line state"
+  },
+  {
+    "bugId": "BUG-2",
+    "source": "hunter-medium-filters",
+    "verdict": "ACCEPT",
+    "reasoning": "Confirmed. stripHash uses backslash-escape semantics for both single and double quotes. But YAML single-quoted strings escape the quote by doubling it (''), not with backslash. So `key: 'it''s a value # not a comment'` — the scanner sees the first ' after 'it' as the closing quote (since it doesn't recognize '' as an escape), then treats '# not a comment' as a hash comment and strips it. This corrupts YAML content. The YAML double-quote escape works differently too (uses backslash), but single-quote is the more common issue.",
+    "codeQuote": "if (line[j] === '\\\\') {\n  processed += line[j] + (line[j + 1] ?? '');\n  j += 2;\n  continue;\n}\nif (line[j] === quote) {\n  // closes on first single-quote, not recognizing '' as YAML escape"
+  },
+  {
+    "bugId": "BUG-3",
+    "source": "hunter-medium-filters",
+    "verdict": "ACCEPT",
+    "reasoning": "Confirmed. TOML maps to { style: 'hash' } in LANGUAGE_MAP. stripHash only handles single-character quote delimiters ('\"' and \"'\"), not TOML's triple-quote multi-line strings (\"\"\"...\"\"\" and '''...'''). A # inside a TOML multi-line basic string would be stripped as a comment. The stripPython function correctly handles triple-quotes for Python, proving the codebase is aware of the pattern but didn't apply it to TOML via stripHash.",
+    "codeQuote": "'.toml': { style: 'hash' },\n// stripHash only handles: if (ch === '\"' || ch === \"'\") — single char quotes"
+  },
+  {
+    "bugId": "BUG-4",
+    "source": "hunter-medium-filters",
+    "verdict": "ACCEPT",
+    "reasoning": "Confirmed by tracing through parseMatches. A context line from `rg -C2` like `src/config.ts-11-host: localhost` will not match the vimgrep or standard patterns (they require : after the digit sequence, but context lines use -). It falls through to the noLineNum fallback: regex `^(.+?):(.+)$` matches at the first colon → file='src/config.ts-11-host', text=' localhost'. Guard checks pass: 'src/config.ts-11-host' is not all digits AND contains '/' and '.'. So it becomes a false match with a mangled filename. This is a real parsing bug when context flags are used.",
+    "codeQuote": "const noLineNum = trimmed.match(/^(.+?):(.+)$/);\nif (noLineNum && !noLineNum[1].match(/^\\d+$/) && /[/.]/.test(noLineNum[1])) {\n  matches.push({ file: noLineNum[1], line: '', text: noLineNum[2].trim() });"
+  },
+  {
+    "bugId": "BUG-5",
+    "source": "hunter-medium-filters",
+    "verdict": "ACCEPT",
+    "reasoning": "Confirmed. stripCStyle treats backtick identically to single/double quotes — a simple open/close delimiter with backslash escaping. But JS template literals support ${...} expressions that can contain nested backticks, other strings, and arbitrary code. `const x = \\`value: ${map.get(\\`key\\`)}\\`;` — the backtick inside get() would be treated as closing the template literal, causing the rest of the line to be parsed incorrectly. However, this is a subset of BUG-1 (filters) which covers the broader multi-line template literal issue. Both are real but BUG-5 is the single-line variant.",
+    "codeQuote": "if (ch === '\"' || ch === \"'\" || ch === '`') {\n  const quote = ch;\n  // treats backtick as simple quote, no ${...} nesting awareness"
+  },
+  {
+    "bugId": "BUG-6",
+    "source": "hunter-medium-filters",
+    "verdict": "ACCEPT",
+    "reasoning": "Confirmed. The overflow is calculated as `matches.length - MAX_MATCHES_PER_FILE` (line: `const overflow = matches.length - MAX_MATCHES_PER_FILE;`). But `shown` may be less than MAX_MATCHES_PER_FILE due to dedup skipping. If a file has 7 matches but 3 were deduped (shown=2), overflow = 7-5 = 2, but only 2 lines were actually displayed, so there are really 5 undisplayed matches (7-2=5), not 2. The overflow count understates the hidden matches. However, the display still shows the correct summary line with total matches, so this is a cosmetic issue in the per-file overflow indicator.",
+    "codeQuote": "const overflow = matches.length - MAX_MATCHES_PER_FILE;\nif (overflow > 0) {\n  parts.push(`  ... ${overflow} more matches`);\n}\n// Should be: matches.length - shown"
+  }
+]

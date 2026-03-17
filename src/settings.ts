@@ -24,8 +24,14 @@ export interface LoadedConfig {
 function readJsonFile(filePath: string): Record<string, unknown> {
   try {
     if (!fs.existsSync(filePath)) return {};
-    return JSON.parse(fs.readFileSync(filePath, "utf8"));
-  } catch {
+    const content = fs.readFileSync(filePath, "utf8");
+    return JSON.parse(content);
+  } catch (e) {
+    // If the file exists but can't be parsed, throw instead of
+    // silently returning {} (which would cause data loss on save)
+    if (fs.existsSync(filePath)) {
+      throw new Error(`Failed to parse settings file ${filePath}: ${e instanceof Error ? e.message : String(e)}`);
+    }
     return {};
   }
 }
@@ -69,7 +75,13 @@ export function saveSettings(
   const settingsPath =
     scope === "project" ? getProjectSettingsPath(cwd) : getGlobalSettingsPath();
 
-  const settings = readJsonFile(settingsPath);
+  let settings: Record<string, unknown>;
+  try {
+    settings = readJsonFile(settingsPath);
+  } catch (e) {
+    // Don't overwrite a corrupted file — that would destroy other extensions' data
+    throw new Error(`Cannot save RTK settings: ${e instanceof Error ? e.message : String(e)}`);
+  }
   settings[SETTINGS_KEY] = config;
 
   fs.mkdirSync(path.dirname(settingsPath), { recursive: true });

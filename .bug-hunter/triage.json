@@ -1,0 +1,184 @@
+{
+  "generatedAt": "2026-03-17T09:26:27.029Z",
+  "target": "/Users/codex/Downloads/Code Files/pi-rtk",
+  "totalFiles": 59,
+  "scannableFiles": 31,
+  "strategy": "parallel",
+  "modeFile": "modes/parallel.md",
+  "needsLoop": false,
+  "fileBudget": 60,
+  "avgLines": 208,
+  "avgTokensPerFile": 832,
+  "estimatedTotalLines": 12272,
+  "sampledFiles": 30,
+  "domains": [
+    {
+      "path": "src/db",
+      "tier": "HIGH",
+      "fileCount": 2,
+      "riskBreakdown": {
+        "critical": 0,
+        "high": 2,
+        "medium": 0,
+        "low": 0,
+        "context-only": 0
+      }
+    },
+    {
+      "path": "src/filters",
+      "tier": "HIGH",
+      "fileCount": 22,
+      "riskBreakdown": {
+        "critical": 0,
+        "high": 1,
+        "medium": 17,
+        "low": 0,
+        "context-only": 4
+      }
+    },
+    {
+      "path": ".",
+      "tier": "MEDIUM",
+      "fileCount": 1,
+      "riskBreakdown": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0,
+        "context-only": 0
+      }
+    },
+    {
+      "path": "src",
+      "tier": "MEDIUM",
+      "fileCount": 10,
+      "riskBreakdown": {
+        "critical": 0,
+        "high": 0,
+        "medium": 10,
+        "low": 0,
+        "context-only": 0
+      }
+    },
+    {
+      "path": "test",
+      "tier": "CONTEXT-ONLY",
+      "fileCount": 24,
+      "riskBreakdown": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "context-only": 24
+      }
+    }
+  ],
+  "scanOrder": [
+    "src/db/connection.ts",
+    "src/db/schema.ts",
+    "src/filters/json-schema.ts",
+    "index.ts",
+    "src/config.ts",
+    "src/discover.ts",
+    "src/filters/docker.ts",
+    "src/filters/git-action.ts",
+    "src/filters/git-branch.ts",
+    "src/filters/git-diff.ts",
+    "src/filters/git-log.ts",
+    "src/filters/git-status.ts",
+    "src/filters/grep.ts",
+    "src/filters/http.ts",
+    "src/filters/index.ts",
+    "src/filters/lint-js.ts",
+    "src/filters/lint-py.ts",
+    "src/filters/lint-rs.ts",
+    "src/filters/lint-tsc.ts",
+    "src/filters/log-dedup.ts",
+    "src/filters/ls.ts",
+    "src/filters/npm-install.ts",
+    "src/filters/read-filter.ts",
+    "src/gain.ts",
+    "src/matcher.ts",
+    "src/pipeline.ts",
+    "src/settings-panel.ts",
+    "src/settings.ts",
+    "src/tee.ts",
+    "src/tracker.ts",
+    "src/utils.ts"
+  ],
+  "tokenEstimate": {
+    "recon": 1180,
+    "perHunterChunk": 25792,
+    "totalPipeline": 33172
+  },
+  "recommendations": [],
+  "riskMap": {
+    "critical": [],
+    "high": [
+      "src/db/connection.ts",
+      "src/db/schema.ts",
+      "src/filters/json-schema.ts"
+    ],
+    "medium": [
+      "index.ts",
+      "src/config.ts",
+      "src/discover.ts",
+      "src/filters/docker.ts",
+      "src/filters/git-action.ts",
+      "src/filters/git-branch.ts",
+      "src/filters/git-diff.ts",
+      "src/filters/git-log.ts",
+      "src/filters/git-status.ts",
+      "src/filters/grep.ts",
+      "src/filters/http.ts",
+      "src/filters/index.ts",
+      "src/filters/lint-js.ts",
+      "src/filters/lint-py.ts",
+      "src/filters/lint-rs.ts",
+      "src/filters/lint-tsc.ts",
+      "src/filters/log-dedup.ts",
+      "src/filters/ls.ts",
+      "src/filters/npm-install.ts",
+      "src/filters/read-filter.ts",
+      "src/gain.ts",
+      "src/matcher.ts",
+      "src/pipeline.ts",
+      "src/settings-panel.ts",
+      "src/settings.ts",
+      "src/tee.ts",
+      "src/tracker.ts",
+      "src/utils.ts"
+    ],
+    "low": [],
+    "context-only": [
+      "src/filters/test-go.ts",
+      "src/filters/test-js.ts",
+      "src/filters/test-py.ts",
+      "src/filters/test-rs.ts",
+      "test/config.test.ts",
+      "test/discover.test.ts",
+      "test/docker.test.ts",
+      "test/gain.test.ts",
+      "test/git-action.test.ts",
+      "test/git-branch.test.ts",
+      "test/git-diff.test.ts",
+      "test/git-log.test.ts",
+      "test/git-status.test.ts",
+      "test/grep.test.ts",
+      "test/http.test.ts",
+      "test/integration.test.ts",
+      "test/json-schema.test.ts",
+      "test/lint.test.ts",
+      "test/log-dedup.test.ts",
+      "test/ls.test.ts",
+      "test/matcher.test.ts",
+      "test/npm-install.test.ts",
+      "test/read-filter.test.ts",
+      "test/settings-panel.test.ts",
+      "test/tee.test.ts",
+      "test/test-runners.test.ts",
+      "test/tracker.test.ts",
+      "test/utils.test.ts"
+    ]
+  }
+}

@@ -88,6 +88,8 @@ function stripCStyle(text: string): string {
   const result: string[] = [];
   let inBlockComment = false;
   let isDocBlock = false;
+  let inString = false;
+  let stringChar = "";
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
@@ -111,6 +113,32 @@ function stripCStyle(text: string): string {
       continue;
     }
 
+    // If we're inside a multi-line string (template literal), continue
+    // scanning for the closing quote without stripping anything
+    if (inString) {
+      let j = 0;
+      while (j < line.length) {
+        if (line[j] === "\\" && stringChar !== "`") {
+          // backslash escape in regular strings (not template literals where
+          // we still need to handle ${} but the parser just preserves content)
+          j += 2;
+          continue;
+        }
+        if (line[j] === "\\" && stringChar === "`") {
+          // backslash escape inside template literal
+          j += 2;
+          continue;
+        }
+        if (line[j] === stringChar) {
+          inString = false;
+          break;
+        }
+        j++;
+      }
+      result.push(line);
+      continue;
+    }
+
     // Process the line character by character to respect strings
     let processed = "";
     let j = 0;
@@ -122,6 +150,7 @@ function stripCStyle(text: string): string {
         const quote = ch;
         processed += ch;
         j++;
+        let closed = false;
         while (j < line.length) {
           if (line[j] === "\\") {
             processed += line[j] + (line[j + 1] ?? "");
@@ -131,10 +160,16 @@ function stripCStyle(text: string): string {
           if (line[j] === quote) {
             processed += line[j];
             j++;
+            closed = true;
             break;
           }
           processed += line[j];
           j++;
+        }
+        if (!closed) {
+          // String spans multiple lines — track it
+          inString = true;
+          stringChar = quote;
         }
         continue;
       }
@@ -204,9 +239,20 @@ function stripHash(text: string): string {
   const lines = text.split("\n");
   const result: string[] = [];
   let blockScalarIndent = -1; // -1 = not in block scalar
+  let inTripleQuote: string | null = null; // '"""' or "'''"
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+
+    // If inside a triple-quoted string, look for closing sequence
+    if (inTripleQuote !== null) {
+      const closeIdx = line.indexOf(inTripleQuote);
+      if (closeIdx !== -1) {
+        inTripleQuote = null;
+      }
+      result.push(line);
+      continue;
+    }
 
     // If inside a YAML block scalar, preserve lines that are indented
     // deeper than the block scalar indicator or are empty
@@ -238,13 +284,40 @@ function stripHash(text: string): string {
     while (j < line.length) {
       const ch = line[j];
 
+      // Triple-quoted strings (TOML: """ or ''')
+      if (
+        (ch === '"' && line[j + 1] === '"' && line[j + 2] === '"') ||
+        (ch === "'" && line[j + 1] === "'" && line[j + 2] === "'")
+      ) {
+        const tripleQuote = ch + ch + ch;
+        const closeIdx = line.indexOf(tripleQuote, j + 3);
+        if (closeIdx !== -1) {
+          // Single-line triple-quote — preserve everything between
+          processed += line.slice(j, closeIdx + 3);
+          j = closeIdx + 3;
+        } else {
+          // Multi-line triple-quote starts — preserve rest of line
+          processed += line.slice(j);
+          j = line.length;
+          inTripleQuote = tripleQuote;
+        }
+        continue;
+      }
+
       // String literals
       if (ch === '"' || ch === "'") {
         const quote = ch;
         processed += ch;
         j++;
         while (j < line.length) {
-          if (line[j] === "\\") {
+          if (quote === "'" && line[j] === "'" && line[j + 1] === "'") {
+            // YAML single-quote escape: '' (doubled quote)
+            processed += "''";
+            j += 2;
+            continue;
+          }
+          if (quote === '"' && line[j] === "\\") {
+            // Backslash escape (valid for double-quoted strings)
             processed += line[j] + (line[j + 1] ?? "");
             j += 2;
             continue;

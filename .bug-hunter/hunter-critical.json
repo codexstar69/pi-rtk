@@ -1,0 +1,58 @@
+[
+  {
+    "bugId": "BUG-1",
+    "severity": "Medium",
+    "category": "logic",
+    "file": "src/settings.ts",
+    "lines": "28-33",
+    "claim": "readJsonFile silently returns {} on JSON parse errors, causing saveSettings to overwrite the entire settings file with only RTK data, destroying all other extension settings",
+    "evidence": "function readJsonFile(filePath: string): Record<string, unknown> { try { if (!fs.existsSync(filePath)) return {}; return JSON.parse(fs.readFileSync(filePath, 'utf8')); } catch { return {}; } }",
+    "runtimeTrigger": "If settings.json is temporarily corrupted (e.g., partial write by another process, disk full during write, or manual edit error), readJsonFile returns {}. Then saveSettings calls readJsonFile, gets {}, sets settings['rtk'] = config, and writes back {\"rtk\": ...}, permanently destroying all other extensions' settings that were in the file.",
+    "crossReferences": ["src/settings.ts:saveSettings", "index.ts:saveSettings call in /rtk settings"],
+    "confidenceScore": 82,
+    "stride": "Tampering",
+    "cwe": "CWE-755"
+  },
+  {
+    "bugId": "BUG-2",
+    "severity": "Low",
+    "category": "logic",
+    "file": "src/pipeline.ts",
+    "lines": "72-85",
+    "claim": "commandMap grows unbounded when tool_call events have no matching tool_result (cancelled/aborted tool calls), causing memory leak within long sessions",
+    "evidence": "state.commandMap.set(event.toolCallId, { command, toolName: 'bash' });  // In createToolCallHandler — entries are only deleted in tool_result handler via state.commandMap.delete(event.toolCallId)",
+    "runtimeTrigger": "When a tool call is aborted/cancelled by the user or the agent before a tool_result is emitted, the commandMap entry is never cleaned up. Over a long coding session with many cancelled operations, this leaks memory. The map is only cleared on session_start/switch/fork/shutdown, not on individual tool call cancellations.",
+    "crossReferences": ["index.ts:session_start handler calls state.commandMap.clear()"],
+    "confidenceScore": 72,
+    "stride": "N/A",
+    "cwe": "CWE-401"
+  },
+  {
+    "bugId": "BUG-3",
+    "severity": "Low",
+    "category": "logic",
+    "file": "src/tee.ts",
+    "lines": "34-49",
+    "claim": "generateFilename uses seconds-precision local time, causing file overwrite when the same command produces tee output twice within the same second",
+    "evidence": "function generateFilename(command: string): string { const now = new Date(); ... const slug = slugify(command); return `${date}_${time}_${slug}.txt`; }",
+    "runtimeTrigger": "If a filter matches an errored command and tee is enabled, and the same command (e.g., 'npm test') errors twice within the same wall-clock second (possible with fast test runs or rapid retries), the second saveTee call generates an identical filename and writeFileSync silently overwrites the first file, losing its content.",
+    "crossReferences": ["src/tee.ts:saveTee", "src/pipeline.ts:step 11 tee saving"],
+    "confidenceScore": 65,
+    "stride": "N/A",
+    "cwe": "CWE-367"
+  },
+  {
+    "bugId": "BUG-4",
+    "severity": "Medium",
+    "category": "logic",
+    "file": "src/db/connection.ts",
+    "lines": "14-36",
+    "claim": "Singleton openDb caches the first connection and silently returns it for all subsequent calls regardless of the dbPath argument, returning the wrong database",
+    "evidence": "export function openDb(dbPath?: string): Database.Database { if (db) return db; ... db = new Database(resolvedPath); ... return db; }",
+    "runtimeTrigger": "If any code path calls openDb(':memory:') before the main session initialization calls openDb() (default path), all subsequent openDb() calls return the in-memory database instead of the persistent on-disk database. This causes all tracking data to be silently lost. While the production flow calls closeDb() between sessions, any plugin or test that opens a connection first corrupts the singleton for the process lifetime until closeDb() is called.",
+    "crossReferences": ["index.ts:initializeSession calls openDb()", "index.ts:resetState calls closeDb()"],
+    "confidenceScore": 68,
+    "stride": "N/A",
+    "cwe": "CWE-665"
+  }
+]

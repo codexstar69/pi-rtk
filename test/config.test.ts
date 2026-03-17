@@ -274,15 +274,12 @@ describe("loadSettings", () => {
     expect(result.source).toBe("default");
   });
 
-  it("survives corrupted settings.json", () => {
+  it("throws on corrupted settings.json instead of silently ignoring", () => {
     const projectPath = path.join(tmpDir, ".pi", "settings.json");
     fs.mkdirSync(path.dirname(projectPath), { recursive: true });
     fs.writeFileSync(projectPath, "not valid json {{{{");
 
-    const result = loadSettings(tmpDir);
-
-    expect(result.source).toBe("default");
-    expect(result.config).toEqual({});
+    expect(() => loadSettings(tmpDir)).toThrow(/Failed to parse settings file/);
   });
 
   it("returns paths correctly", () => {
@@ -369,6 +366,21 @@ describe("saveSettings", () => {
     expect(loaded.config.filters?.grep).toBe(false);
     expect(loaded.config.minOutputChars).toBe(200);
     expect(loaded.config.debugMode).toBe(true);
+  });
+
+  it("throws on corrupted settings.json instead of destroying data", () => {
+    const settingsPath = getProjectSettingsPath(tmpDir);
+    const corruptedContent = "not valid json {{{{";
+    fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
+    fs.writeFileSync(settingsPath, corruptedContent);
+
+    expect(() => saveSettings({ enabled: true }, "project", tmpDir)).toThrow(
+      /Cannot save RTK settings/,
+    );
+
+    // The corrupted file must NOT be overwritten
+    const afterContent = fs.readFileSync(settingsPath, "utf8");
+    expect(afterContent).toBe(corruptedContent);
   });
 
   it("no temp file left behind after save", () => {

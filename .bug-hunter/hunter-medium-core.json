@@ -1,0 +1,30 @@
+[
+  {
+    "bugId": "BUG-1",
+    "severity": "Low",
+    "category": "logic",
+    "file": "src/gain.ts",
+    "lines": "152",
+    "claim": "Separator line width is 2 characters too wide. The code uses 12 (claiming '6 * 2-char gaps') but Array.join('  ') on 6 elements produces only 5 gaps (10 chars), not 6. This causes the separator line to extend 2 characters beyond the actual table data columns.",
+    "evidence": "const sepLen = commandW + runsW + rawW + filtW + savedW + BAR_WIDTH + 12; // 12 = 6 * 2-char gaps",
+    "runtimeTrigger": "Call formatGainOutput() with any non-empty database. The separator line '─'.repeat(sepLen) will be 2 characters wider than the data rows produced by fmtRow(), which joins 6 columns with '  ' (5 separators × 2 = 10 chars, not 12).",
+    "crossReferences": ["src/gain.ts:fmtRow function at line 140"],
+    "confidenceScore": 92,
+    "stride": "N/A",
+    "cwe": "N/A"
+  },
+  {
+    "bugId": "BUG-2",
+    "severity": "Low",
+    "category": "logic",
+    "file": "src/utils.ts",
+    "lines": "39-40",
+    "claim": "The redirect detection regex />/ matches '>' anywhere in the command string, including inside quoted arguments. Commands like `echo \"2 > 1\"` or `git log --format=\">%s\"` will be incorrectly classified as having redirects, causing shouldFilter to return false (skip filtering) when the command should be filtered.",
+    "evidence": "if (/>/.test(command)) return false;",
+    "runtimeTrigger": "Call shouldFilter('echo \"value > 0\"') — returns false (skip filtering) even though the '>' is inside quotes and not an actual shell redirect. The command output won't be filtered, missing a token-saving opportunity.",
+    "crossReferences": ["src/utils.ts:shouldFilter"],
+    "confidenceScore": 78,
+    "stride": "N/A",
+    "cwe": "N/A"
+  }
+]
