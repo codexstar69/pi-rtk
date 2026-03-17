@@ -1,0 +1,49 @@
+{
+  "featureId": "lint-filters",
+  "milestone": "tool-filters",
+  "reviewedAt": "2026-03-17T12:00:00.000Z",
+  "commitId": "87a95eb",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeQuality": {
+    "score": 4,
+    "notes": "Well-structured implementation with consistent patterns across all 4 lint filters. Each follows the same architecture: local strip(), parse function, isSuggestionLine(), formatGrouped(), and factory function. Code is readable with good JSDoc comments. Minor deduction: each filter duplicates a local strip() function that only handles SGR ANSI sequences (missing OSC 8 hyperlinks), instead of reusing stripAnsi() from utils.ts. This is a code duplication issue but not functionally impactful for lint output."
+  },
+  "testCoverage": {
+    "score": 5,
+    "notes": "53 tests covering all 4 filters comprehensively. Tests cover: name correctness, command matching (positive and negative), error grouping by code/rule, 5-instance cap with overflow indicator, suggestion stripping (Did you mean + help:), clean output handling, multiple format variants (colon-separated TSC, biome ━ format), >70% savings verification on large inputs, ANSI code handling, and registry integration. Good edge case coverage."
+  },
+  "issues": [
+    {
+      "severity": "non_blocking",
+      "description": "Each of the 4 lint filter files defines its own local strip() function with regex /\\x1b\\[[0-9;]*m/g that only strips SGR (color) ANSI sequences. The project already has stripAnsi() in src/utils.ts which also strips OSC 8 hyperlink sequences. This is code duplication — 4 identical copies of the same function. Should use the shared utility. Not blocking because lint tool output is unlikely to contain OSC 8 sequences."
+    },
+    {
+      "severity": "non_blocking",
+      "description": "The summary format uses '✗ N errors (M codes/rules/lints)' across all filters, while IMPLEMENTATION.md section 7 specifies '{total} errors in {total} files'. The implemented format is arguably more informative (grouping count vs file count) and the feature description only says 'includes total summary' without mandating format. Minor spec deviation."
+    },
+    {
+      "severity": "suggestion",
+      "description": "The lint-js filter's ESLint file header detection regex '/^[/.]/.test(line)' only detects paths starting with / or . — it would miss Windows-style paths (C:\\...) or relative paths without ./ prefix like 'src/file.ts'. This is likely fine for the Unix-focused Pi environment but worth noting."
+    },
+    {
+      "severity": "suggestion",
+      "description": "The IMPLEMENTATION.md mentions 'golangci-lint' and 'prettier --check' as lint input detection targets, but no filter was created for these. The feature description only lists tsc/eslint/biome/ruff/clippy, so these are not required for this feature, but they represent uncovered lint tools."
+    }
+  ],
+  "sharedStateObservations": [
+    {
+      "target": "AGENTS.md",
+      "observation": "All 4 lint filters duplicate a local strip() ANSI function instead of using the shared stripAnsi() from utils.ts. AGENTS.md doesn't mention a convention about using shared utilities vs local helpers. Documenting a preference for reusing src/utils.ts stripAnsi() could prevent this pattern from spreading.",
+      "evidence": "src/filters/lint-tsc.ts:21, src/filters/lint-js.ts:19, src/filters/lint-py.ts:19, src/filters/lint-rs.ts:19 — all define identical function strip(s: string): string { return s.replace(/\\x1b\\[[0-9;]*m/g, ''); } while src/utils.ts exports stripAnsi() with broader coverage."
+    },
+    {
+      "target": "AGENTS.md",
+      "observation": "The pattern of 4 similarly-structured filter files (lint-tsc, lint-js, lint-py, lint-rs) each with parseFoo, isSuggestionLine, formatGrouped, and createFooFilter exports is well-established but not documented. A note about the standard filter file structure could help future contributors.",
+      "evidence": "All 4 lint filter files follow identical architecture: local strip → interface → parse function → isSuggestionLine → formatGrouped → factory export. Same pattern also appears in test-js.ts, test-py.ts, test-rs.ts, test-go.ts from the test-runner-filters feature."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Solid implementation of 4 lint filters (tsc, eslint/biome, ruff, clippy) with consistent architecture, comprehensive test coverage (53 tests), and correct registry integration. All filters correctly group errors by code/rule/lint name, cap at 5 instances per group with overflow indicators, strip suggestion lines, and produce summary output. Two non-blocking issues: duplicated ANSI strip function (should use shared utils.ts) and minor summary format deviation from IMPLEMENTATION.md spec. No blocking issues found."
+}

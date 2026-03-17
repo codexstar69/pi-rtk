@@ -1,0 +1,49 @@
+{
+  "featureId": "ls-filter",
+  "milestone": "tool-filters",
+  "reviewedAt": "2026-03-17T06:30:00.000Z",
+  "commitId": "a31f82b",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeQuality": {
+    "score": 4,
+    "notes": "Well-structured implementation with clear separation of concerns: parsers (ls-long, simple-ls, find/fd, tree, eza), formatters (ls output, grouped output), and detection logic. Good use of pre-compiled regexes. Comprehensive noise directory set (20 entries). Helper functions are clean and well-named. Minor issues: (1) tree parser uses heuristic 'no dot in name = directory' which will misclassify extensionless files like Makefile, Dockerfile, LICENSE as directories; (2) IMPLEMENTATION.md specifies 'collapse deep empty paths (a/b/c/ → a/b/c/)' for tree output but this is not implemented; (3) simple ls parser treats all entries as files (acceptable heuristic but noted)."
+  },
+  "testCoverage": {
+    "score": 4,
+    "notes": "32 tests covering all 5 expected behaviors (VAL-TOOL-001 through VAL-TOOL-004 plus extension summary). Tests cover: matching (8 tests for ls/eza/exa/find/fd/tree + negative), ls -la happy path with >60% savings validation, simple ls, empty output, noise directory hiding (both long and simple listing), human-readable sizes (B/K/M/G plus zero-byte), find/fd grouping by parent directory with noise filtering, tree parsing and noise hiding, extension breakdown with +N more overflow, large 200+ file listing, eza/exa format, and edge cases (unicode, spaces, dir-only, all-noise). Good coverage. Missing: no test for tree's deep empty path collapsing (unimplemented feature), no test for extensionless files in tree (Makefile/Dockerfile misclassified as dirs), no test for symlink entries in ls -la."
+  },
+  "issues": [
+    {
+      "severity": "non_blocking",
+      "description": "Tree parser heuristic 'no dot in name = directory' (ls.ts ~line 212) will misclassify extensionless files like Makefile, Dockerfile, LICENSE, Procfile as directories. These are common project files that would be silently dropped from tree output instead of being listed as files. Consider using a trailing '/' check or other heuristic."
+    },
+    {
+      "severity": "non_blocking",
+      "description": "IMPLEMENTATION.md section 5 specifies 'For tree: collapse deep empty paths (a/b/c/ → a/b/c/)' but this is not implemented. The tree parser does not collapse intermediate empty directories. This is a minor spec deviation since the feature description didn't explicitly require it."
+    },
+    {
+      "severity": "suggestion",
+      "description": "The RE_LS_FILE regex (ls.ts ~line 101) uses a fairly strict pattern for the date format (\\w+ \\d+ [\\d:]+) which assumes a specific ls date locale (English month names). Non-English locales or ls implementations that use ISO date formats may not match. Low risk since this is for LLM output filtering, but worth noting."
+    },
+    {
+      "severity": "suggestion",
+      "description": "The filter's matches() method uses /^(ls|exa|eza|find|fd|tree)\\b/ which will match 'ls' at the start of a command. However, IMPLEMENTATION.md shows the matcher maps ls/exa/eza to filter 'ls', find/fd to 'find', and tree to 'tree' separately. The implementation collapses all into a single filter named 'ls', which is a reasonable simplification but differs from the spec's suggestion of separate filter names. The config.ts getFilterGroup correctly maps 'ls', 'find', and 'tree' all to the 'ls' group, so this works."
+    }
+  ],
+  "sharedStateObservations": [
+    {
+      "target": "AGENTS.md",
+      "observation": "AGENTS.md doesn't document the pattern that filter implementations should export a factory function (createXxxFilter) returning a Filter interface. This is a consistent pattern across all filters but isn't codified.",
+      "evidence": "All filters use the same pattern: createGitStatusFilter(), createGitDiffFilter(), createLsFilter(), etc. - exported factory functions returning Filter objects."
+    },
+    {
+      "target": "AGENTS.md",
+      "observation": "AGENTS.md doesn't mention the NOISE_DIRS set convention. Multiple filters may need to reference noise directories (ls filter, potentially grep filter for path exclusion). Having a shared constant or at least documenting the canonical noise list would prevent drift.",
+      "evidence": "src/filters/ls.ts defines NOISE_DIRS with 20 entries locally. If other filters need noise exclusion, they'd duplicate this list."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The ls-filter feature is well-implemented with comprehensive test coverage. It correctly handles ls -la, simple ls, find/fd, tree, and eza/exa output formats. Noise directory hiding works for all 20+ patterns. Human-readable sizes format correctly (B/K/M/G). Extension breakdown summary with overflow (+N more) works as specified. Registration in the filter registry is correct. Two non-blocking issues noted: tree parser misclassifies extensionless files as directories (Makefile, Dockerfile, LICENSE), and the IMPLEMENTATION.md spec for tree deep path collapsing is not implemented. Neither issue blocks the feature since the core expected behaviors (VAL-TOOL-001 through VAL-TOOL-004) are all met with >60% savings validated in tests. Overall: solid implementation following existing codebase patterns."
+}

@@ -1,0 +1,40 @@
+{
+  "featureId": "grep-filter",
+  "milestone": "tool-filters",
+  "reviewedAt": "2026-03-17T06:30:00.000Z",
+  "commitId": "5599d9b",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeQuality": {
+    "score": 4,
+    "notes": "Clean implementation following established Filter interface. Well-structured parsing with multiple grep/rg output format handling (standard, vimgrep, no-linenum, single-file). Constants for caps (MAX_MATCHES_PER_FILE=5, MAX_FILES=20). Good separation of concerns (parseMatches, findDuplicates, apply). Minor issues: duplicated local strip() function instead of importing shared stripAnsi from utils.ts (consistent with other filters but a DRY violation); context lines from rg -C could leak through noLineNum regex if they contain colons."
+  },
+  "testCoverage": {
+    "score": 5,
+    "notes": "26 tests providing comprehensive coverage: matches() for rg/grep/git-grep discrimination, file grouping (VAL-TOOL-017), per-file cap with overflow indicator, file cap with overflow, match count summary (VAL-TOOL-018), singular/plural grammar, deduplication across files (VAL-TOOL-019), dedup count annotation, edge cases (empty output, ANSI stripping, vimgrep format, no-linenum format, context separators, unicode filenames, large output >500 lines), and a combined scenario testing all features together. Savings thresholds verified (>60%)."
+  },
+  "issues": [
+    {
+      "severity": "non_blocking",
+      "description": "src/filters/grep.ts:20-24 — Duplicated local strip() function identical to stripAnsi() in src/utils.ts. This is consistent with all other filter files (~11 files have the same duplication), but is a DRY violation. Should import from utils.ts instead."
+    },
+    {
+      "severity": "non_blocking",
+      "description": "src/filters/grep.ts:55-57 — Context lines from rg -C output (format: file.ts-11-context text) are only documented as handled via comments but not explicitly filtered. If a context line contains a colon character, it could match the noLineNum regex (line 81-84) and be counted as a match, slightly inflating match counts. The -- separators are properly handled."
+    },
+    {
+      "severity": "suggestion",
+      "description": "src/filters/grep.ts:139-142 — The dedup logic with shownDupTexts can cause later files to show fewer matches than expected. If file A shows a dup text and marks it as shown, file B/C won't show that text at all but still emit their file header. In edge cases a file header could appear with 0 visible matches. Consider showing the text in each file but only annotating the count on the first occurrence, or removing the file header when zero matches are displayed."
+    }
+  ],
+  "sharedStateObservations": [
+    {
+      "target": "AGENTS.md",
+      "observation": "All 11+ filter files duplicate a local strip() function identical to the shared stripAnsi() in src/utils.ts. This pattern is now deeply established but AGENTS.md doesn't mention whether filters should use the shared utility or a local copy. A convention note would prevent further drift.",
+      "evidence": "grep.ts:20, lint-tsc.ts:22, lint-js.ts:22, lint-py.ts:22, lint-rs.ts:22, test-js.ts:17, test-py.ts:17, test-go.ts:17, test-rs.ts:17 all define identical local strip() functions. src/utils.ts exports stripAnsi() with the same logic."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The grep filter implementation is solid and meets all feature requirements. It correctly groups results by file, caps at 5 matches per file and 20 files with overflow indicators, deduplicates identical match lines appearing in 3+ files, and appends a summary. It handles multiple grep/rg output formats including vimgrep, no-line-numbers, and single-file mode. ANSI stripping and unicode support work correctly. Test coverage is comprehensive with 26 tests covering all specified validation criteria (VAL-TOOL-017/018/019). Two non-blocking issues noted: duplicated strip() utility and potential context line leakage from rg -C output. Passing overall."
+}

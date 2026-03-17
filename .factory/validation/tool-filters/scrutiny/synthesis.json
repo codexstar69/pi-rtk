@@ -1,0 +1,42 @@
+{
+  "milestone": "tool-filters",
+  "round": 1,
+  "status": "pass",
+  "validatorsRun": {
+    "test": { "passed": true, "command": "bun run test", "exitCode": 0, "details": "501 tests passed across 15 test files in 560ms" },
+    "typecheck": { "passed": true, "command": "bunx tsc --noEmit", "exitCode": 0 },
+    "lint": { "passed": true, "command": "echo \"no lint configured\"", "exitCode": 0 }
+  },
+  "reviewsSummary": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "failedFeatures": []
+  },
+  "blockingIssues": [],
+  "appliedUpdates": [],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Add convention: 'Filters must import stripAnsi() from src/utils.ts for ANSI stripping. Do not define local strip() helpers — the shared utility handles both SGR and OSC 8 sequences.'",
+      "evidence": "All 11+ filter files (ls.ts, grep.ts, lint-tsc/js/py/rs.ts, test-js/py/rs/go.ts, git-status/diff.ts) define identical local strip() functions instead of using the shared stripAnsi() from src/utils.ts. This DRY violation was flagged by all 4 review subagents independently.",
+      "isSystemic": true
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Add note documenting the standard filter file structure: export a factory function (createXxxFilter) returning a Filter object with name, matches(cmd), and apply(cmd, raw) methods. Include parsing, formatting, and helper functions as module-private.",
+      "evidence": "All filter files follow this pattern consistently (ls-filter, test-runner-filters, lint-filters, grep-filter) but it's not codified. Documented in lint-filters and test-runner-filters reviews."
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "NOISE_DIRS set should be shared across filters to prevent drift",
+      "reason": "Currently only the ls filter uses noise directory filtering. No other filter has needed it yet. Premature to extract a shared constant — can be done if/when a second consumer appears."
+    },
+    {
+      "observation": "AGENTS.md should document the createXxxFilter factory function pattern for filters",
+      "reason": "Promoted to suggestedGuidanceUpdates instead of rejected — this is a legitimate pattern worth codifying."
+    }
+  ],
+  "previousRound": null
+}
