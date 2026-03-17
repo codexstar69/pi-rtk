@@ -114,12 +114,12 @@ describe("discover estimates savings", () => {
 
   it("different commands get different savings estimates", () => {
     seedUnfiltered("cargo build", 4, 12000);
-    seedUnfiltered("docker compose up", 2, 8000);
+    seedUnfiltered("docker ps", 2, 8000);
 
     const output = formatDiscoverOutput(db);
     // Both should be listed with their own estimates
     expect(output).toContain("cargo build");
-    expect(output).toContain("docker compose");
+    expect(output).toContain("docker ps");
   });
 });
 
@@ -130,7 +130,7 @@ describe("discover estimates savings", () => {
 describe("discover total estimate", () => {
   it("includes total estimated savings summary", () => {
     seedUnfiltered("cargo build", 4, 12000);
-    seedUnfiltered("docker compose up", 2, 8000);
+    seedUnfiltered("docker ps", 2, 8000);
 
     const output = formatDiscoverOutput(db);
     // Should contain a total/estimated summary line
