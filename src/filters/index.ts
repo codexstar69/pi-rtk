@@ -15,6 +15,10 @@ import { createTestJsFilter } from "./test-js.js";
 import { createTestPyFilter } from "./test-py.js";
 import { createTestRsFilter } from "./test-rs.js";
 import { createTestGoFilter } from "./test-go.js";
+import { createLintTscFilter } from "./lint-tsc.js";
+import { createLintJsFilter } from "./lint-js.js";
+import { createLintPyFilter } from "./lint-py.js";
+import { createLintRsFilter } from "./lint-rs.js";
 
 /** Result returned by every filter's apply(). */
 export interface FilterResult {
@@ -51,6 +55,10 @@ const ALL_FILTERS: Filter[] = [
   createTestPyFilter(),
   createTestRsFilter(),
   createTestGoFilter(),
+  createLintTscFilter(),
+  createLintJsFilter(),
+  createLintPyFilter(),
+  createLintRsFilter(),
 ];
 
 /** Register a filter (used by filter modules during setup). */
