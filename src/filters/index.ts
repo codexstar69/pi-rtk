@@ -24,6 +24,7 @@ import { createJsonSchemaFilter } from "./json-schema.js";
 import { createDockerListFilter, createDockerLogsFilter } from "./docker.js";
 import { createNpmInstallFilter, createPipInstallFilter } from "./npm-install.js";
 import { createHttpFilter } from "./http.js";
+import { createReadFilter } from "./read-filter.js";
 
 /** Result returned by every filter's apply(). */
 export interface FilterResult {
@@ -70,6 +71,7 @@ const ALL_FILTERS: Filter[] = [
   createDockerLogsFilter(),
   createNpmInstallFilter(),
   createPipInstallFilter(),
+  createReadFilter(),
   createHttpFilter(),
 ];
 
