@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.6] - 2026-04-03
+
+### Fixed
+- **Pi API compatibility: session events** — `session_start` now uses per-event
+  `event.reason` detection for new Pi API (reason-based routing for `startup`,
+  `reload`, `new`, `resume`, `fork`). Legacy `session_switch`/`session_fork`
+  handlers preserved for backward compatibility with older Pi versions.
+- No auth API changes needed — pi-rtk does not make direct LLM calls.
+
 ## [0.1.0] - 2026-03-17
 
 ### Added
