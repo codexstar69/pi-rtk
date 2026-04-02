@@ -86,9 +86,13 @@ export default function (pi: ExtensionAPI) {
     return handler(event as any, ctx as any) as any;
   });
 
-  // 3. session_start: init DB, tracker
-  pi.on("session_start", async (_event: any, ctx: any) => {
+  // 3. session_start: init DB, tracker (enhanced with reason-based routing)
+  pi.on("session_start", async (event: any, ctx: any) => {
     try {
+      // New Pi API: event.reason tells us why this session started
+      if (typeof event.reason === "string" && event.reason !== "startup") {
+        resetState();
+      }
       initializeSession(ctx);
     } catch (e: any) {
       console.error("[RTK] Failed to initialize:", e.message);
@@ -97,7 +101,7 @@ export default function (pi: ExtensionAPI) {
     }
   });
 
-  // 4. session_switch: reset + reinit (Fix 6 from pi-lcm lessons)
+  // 4. session_switch: Legacy handler — only fires on old Pi (removed in new Pi)
   pi.on("session_switch", async (_event: any, ctx: any) => {
     resetState();
     try {
@@ -108,7 +112,7 @@ export default function (pi: ExtensionAPI) {
     }
   });
 
-  // 5. session_fork: reset + reinit
+  // 5. session_fork: Legacy handler — only fires on old Pi (removed in new Pi)
   pi.on("session_fork", async (_event: any, ctx: any) => {
     resetState();
     try {
