@@ -1,6 +1,6 @@
 {
   "name": "pi-token-killer",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Token Killer for Pi -- reduce LLM token consumption by 60-90% on common dev commands",
   "type": "module",
   "license": "MIT",
